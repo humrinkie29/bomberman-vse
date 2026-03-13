@@ -425,8 +425,7 @@ function doEmail(){
   emailjs.send(EMAILJS_SERVICE, EMAILJS_TEMPLATE, {
     to_email: email,
     email_subject: 'Bomberman VŠE — ověřovací kód',
-    email_body: `Tvůj ověřovací kód pro vstup do hry je:\n\n<strong style="font-size:2rem;letter-spacing:.3em">${verifyCode}</strong>\n\nZadej ho ve hře. Kód je platný 10 minut.\n\n— Bomberman`
-  }).then(()=>{
+email_body: `Vážení prváci,\n\nVybral jsem si Vás pro záchranu školy. Čeká Vás 6 úkolů, které prověří Vaší orientaci ve škole a školních systémech. Každý z úkolů Vás přiblíží ke kódu, kterým zneškodníte bombu, která se nachází zde, v NB. Pokud úkoly nesplníte do 1 hodiny, bomba vybuchne!\n\nČas běží! Šance jsou mizivé! Hodně štěstí!\n— Bomberman\n\n───────────────\nTvůj ověřovací kód: ${verifyCode}\nKód je platný 10 minut.`,  }).then(()=>{
     btn.disabled=false;btn.textContent='ODESLAT ZADÁNÍ NA EMAIL ⚡';
     show('verify');
   }).catch(()=>{
