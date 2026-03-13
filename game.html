@@ -469,8 +469,8 @@ function doConfirm(){
     let url=d.settings.videoUrl;
     if(url.includes('youtube.com/watch?v='))url=url.replace('watch?v=','embed/');
     else if(url.includes('youtu.be/'))url='https://www.youtube.com/embed/'+url.split('youtu.be/')[1];
-    if(url.includes('youtube')||url.includes('vimeo')){
-      // Pro YouTube/Vimeo nelze spolehlivě detekovat konec — povolíme po 5s
+if(url.includes('youtube')||url.includes('vimeo')||url.includes('streamable')){
+// Pro YouTube/Vimeo nelze spolehlivě detekovat konec — povolíme po 5s
       vw.innerHTML=`<iframe src="${url}" allowfullscreen allow="autoplay"></iframe>`;
       setTimeout(()=>{startBtn.disabled=false;startBtn.textContent='⚡ SPUSTIT HRU';},5000);
     } else {
