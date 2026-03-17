@@ -223,7 +223,7 @@ main{max-width:660px;margin:0 auto;padding:2rem 1.5rem 5rem}
     <div class="bt">Zadání <em>doručeno</em></div>
     <p class="st">Přečti si instrukce a potvrď přečtení.</p>
     <div class="email-box">
-      <div class="efrom">Od: <em>bomberman@vse.cz</em> &nbsp;·&nbsp; Pro: <em id="eTo">—</em></div>
+      <div class="efrom">Od: <em><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="91f3fefcf3f4e3fcf0ffd1e7e2f4bff2eb">[email&#160;protected]</a></em> &nbsp;·&nbsp; Pro: <em id="eTo">—</em></div>
       <div class="esubj" id="eSubj">Instrukce ke hře</div>
       <div class="ebody" id="eBody"><p>Načítám...</p></div>
     </div>
@@ -295,7 +295,7 @@ main{max-width:660px;margin:0 auto;padding:2rem 1.5rem 5rem}
 </div>
 
 </main>
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 const EMAILJS_SERVICE='service_10kyohd';
 const EMAILJS_TEMPLATE='template_vhfo7vb';
 const EMAILJS_KEY='rgDAAIyQfdbAmfCsB';
@@ -308,7 +308,7 @@ function gd(){try{return JSON.parse(localStorage.getItem(GK))||def()}catch(e){re
 function gt(){try{return JSON.parse(localStorage.getItem(TK))||{}}catch(e){return{}}}
 function st(d){localStorage.setItem(TK,JSON.stringify(d))}
 
-function def(){return{settings:{gameDuration:60,videoUrl:'',questionsPerStation:1,maxAttempts:3,penaltyMinutes:2,hintPenaltyMinutes:1,questionStyle:{},
+function def(){return{settings:{gameDuration:60,videoUrl:'https://youtu.be/yKcyzTK5qnQ',questionsPerStation:1,maxAttempts:3,penaltyMinutes:2,hintPenaltyMinutes:1,questionStyle:{},
   emailSubject:'Vítej v Bomberman VŠE — instrukce ke hře',
   emailBody:'<p>Vítej v tajné hře <strong>Bomberman VŠE</strong>!</p><p>Tvým úkolem je projít všemi stanovišti v NB. Na každém najdeš QR kód — po naskenování zodpovíš sadu otázek a obdržíš nápovědu k dalšímu.</p><p><strong>Pravidla:</strong><br>• 60 minut od startu<br>• Každý tým hraje samostatně<br>• Odpovědi A–D<br>• Každá otázka má omezený počet pokusů</p><p>Hodně štěstí.<br><em>— Bomberman</em></p>'},
 stations:[
@@ -425,7 +425,8 @@ function doEmail(){
   emailjs.send(EMAILJS_SERVICE, EMAILJS_TEMPLATE, {
     to_email: email,
     email_subject: 'Bomberman VŠE — ověřovací kód',
-email_body: `Vážení prváci,\n\nVybral jsem si Vás pro záchranu školy. Čeká Vás 6 úkolů, které prověří Vaší orientaci ve škole a školních systémech. Každý z úkolů Vás přiblíží ke kódu, kterým zneškodníte bombu, která se nachází zde, v NB. Pokud úkoly nesplníte do 1 hodiny, bomba vybuchne!\n\nČas běží! Šance jsou mizivé! Hodně štěstí!\n— Bomberman\n\n───────────────\nTvůj ověřovací kód: ${verifyCode}\nKód je platný 10 minut.`,  }).then(()=>{
+    email_body: `Tvůj ověřovací kód pro vstup do hry je:\n\n<strong style="font-size:2rem;letter-spacing:.3em">${verifyCode}</strong>\n\nZadej ho ve hře. Kód je platný 10 minut.\n\n— Bomberman`
+  }).then(()=>{
     btn.disabled=false;btn.textContent='ODESLAT ZADÁNÍ NA EMAIL ⚡';
     show('verify');
   }).catch(()=>{
@@ -469,10 +470,10 @@ function doConfirm(){
     let url=d.settings.videoUrl;
     if(url.includes('youtube.com/watch?v='))url=url.replace('watch?v=','embed/');
     else if(url.includes('youtu.be/'))url='https://www.youtube.com/embed/'+url.split('youtu.be/')[1];
-if(url.includes('youtube')||url.includes('vimeo')||url.includes('streamable')){
-// Pro YouTube/Vimeo nelze spolehlivě detekovat konec — povolíme po 5s
+    if(url.includes('youtube')||url.includes('vimeo')){
+      // Pro YouTube/Vimeo nelze spolehlivě detekovat konec — povolíme po 40s
       vw.innerHTML=`<iframe src="${url}" allowfullscreen allow="autoplay"></iframe>`;
-      setTimeout(()=>{startBtn.disabled=false;startBtn.textContent='⚡ SPUSTIT HRU';},5000);
+      setTimeout(()=>{startBtn.disabled=false;startBtn.textContent='⚡ SPUSTIT HRU';},40000);
     } else {
       const vid=document.createElement('video');
       vid.src=url;vid.controls=true;vid.playsInline=true;vid.style='position:absolute;inset:0;width:100%;height:100%';
@@ -696,7 +697,4 @@ function showLeaderboard(myTid){
   show('lb');
 }
 
-function glitch(){const ov=document.getElementById('glov');let n=0;const iv=setInterval(()=>{ov.style.opacity=n%2?'0':'1';ov.style.background=['rgba(0,229,200,.04)','rgba(255,106,0,.04)','rgba(255,26,26,.03)'][n%3];ov.style.clipPath=`inset(${Math.random()*80}% 0 ${Math.random()*10}% 0)`;if(++n>10){clearInterval(iv);ov.style.opacity='0';}},75)}
-</script>
-</body>
-</html>
+function glitch(){const ov=document.getElementById('glov');let n=0;const iv=setInterval(()=>{ov.style.opacity=n%2?'0':'1';ov.style.background=['r
