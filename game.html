@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BOMBERMAN VŠE</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Share+Tech+Mono&family=Crimson+Pro:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --red:#ff1a1a;--teal:#00e5c8;--orange:#ff6a00;--dark:#060708;
+  --card:#0d1117;--border:rgba(255,255,255,.07);--muted:rgba(255,255,255,.4);
+  --q-fs:1rem;--q-fw:400;--q-col:#fff;
+}
+html,body{min-height:100%;background:var(--dark);color:#fff;font-family:'Share Tech Mono',monospace;cursor:crosshair;overflow-x:hidden}
+body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,.05) 3px,rgba(0,0,0,.05) 4px);pointer-events:none;z-index:9999}
+.bg-glow{position:fixed;inset:0;background:radial-gradient(ellipse 60% 50% at 50% 30%,rgba(200,0,0,.07),transparent 60%),radial-gradient(ellipse 40% 30% at 80% 80%,rgba(0,229,200,.04),transparent);pointer-events:none}
+.glov{position:fixed;inset:0;pointer-events:none;z-index:9998;opacity:0}
+
+/* HEADER */
+header{position:sticky;top:0;z-index:100;background:rgba(6,7,8,.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:.75rem 1.5rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap}
+.logo{font-family:'Bebas Neue',sans-serif;font-size:1.35rem;letter-spacing:.1em}.logo em{color:var(--red);font-style:normal}
+.hdr-r{display:flex;align-items:center;gap:1.4rem}
+.team-pill{font-size:.6rem;letter-spacing:.2em;color:var(--muted);text-transform:uppercase;display:none}.team-pill b{color:#fff}
+.stn-badge{font-size:.6rem;letter-spacing:.3em;text-transform:uppercase;border:1px solid rgba(0,229,200,.35);color:var(--teal);padding:.2rem .7rem;display:none}
+.hdr-timer{display:none;align-items:center;gap:.45rem;font-family:'Share Tech Mono',monospace;font-size:1.05rem;color:var(--red);text-shadow:0 0 12px rgba(255,26,26,.5)}
+.hdr-timer.warn{animation:twarn .5s ease-in-out infinite alternate}
+@keyframes twarn{to{color:#fff;text-shadow:0 0 24px rgba(255,26,26,1)}}
+.tdot{width:6px;height:6px;border-radius:50%;background:var(--red);animation:blink 1s step-end infinite}
+@keyframes blink{50%{opacity:0}}
+
+/* PHASE */
+.phase{display:none;animation:fadeUp .55s ease both}
+.phase.active{display:block}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+main{max-width:660px;margin:0 auto;padding:2rem 1.5rem 5rem}
+
+/* CARD */
+.card{background:var(--card);border:1px solid var(--border);position:relative;overflow:hidden}
+.card::before{content:'';position:absolute;top:-1px;left:-1px;width:32px;height:32px;border-top:2px solid var(--teal);border-left:2px solid var(--teal)}
+.card::after{content:'';position:absolute;bottom:-1px;right:-1px;width:32px;height:32px;border-bottom:2px solid var(--orange);border-right:2px solid var(--orange)}
+.cb{padding:2rem}
+.ey{font-size:.55rem;letter-spacing:.4em;text-transform:uppercase;color:var(--muted);margin-bottom:.5rem}
+.bt{font-family:'Bebas Neue',sans-serif;font-size:clamp(1.9rem,6vw,3rem);letter-spacing:.05em;line-height:1.05;margin-bottom:.7rem}
+.bt em{color:var(--teal);font-style:normal}
+.st{font-family:'Crimson Pro',serif;font-style:italic;font-size:1rem;color:rgba(255,255,255,.55);line-height:1.7;margin-bottom:1.5rem}
+
+/* INPUTS */
+.inp{width:100%;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);color:#fff;font-family:'Share Tech Mono',monospace;font-size:.88rem;padding:.8rem 1rem;outline:none;transition:border-color .2s;margin-bottom:.65rem}
+.inp:focus{border-color:var(--teal)}.inp::placeholder{color:rgba(255,255,255,.2)}.inp.err{border-color:var(--red)}
+.errmsg{font-size:.62rem;color:var(--red);letter-spacing:.15em;margin-bottom:.7rem;min-height:1em}
+.cta{width:100%;font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:.2em;background:linear-gradient(135deg,var(--teal),#00b0a0);color:#000;border:none;padding:.9rem;cursor:pointer;clip-path:polygon(8px 0%,100% 0%,calc(100% - 8px) 100%,0% 100%);transition:transform .2s,box-shadow .2s;margin-top:.2rem}
+.cta:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(0,229,200,.3)}.cta:disabled{opacity:.4;cursor:not-allowed;transform:none;box-shadow:none}
+.ghost{background:transparent;border:1px solid var(--border);color:var(--muted);font-family:'Share Tech Mono',monospace;font-size:.72rem;letter-spacing:.15em;padding:.65rem 1.3rem;cursor:pointer;transition:all .2s}.ghost:hover{border-color:rgba(255,255,255,.25);color:#fff}
+
+/* EMAIL PHASE */
+.note-sm{font-size:.62rem;letter-spacing:.13em;color:rgba(255,255,255,.2);line-height:1.7;margin-top:.9rem}.note-sm b{color:rgba(255,255,255,.4)}
+
+/* CONFIRM PHASE */
+.email-box{background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.07);padding:1.4rem;margin-bottom:1.3rem}
+.efrom{font-size:.58rem;letter-spacing:.2em;color:var(--muted);margin-bottom:.3rem}.efrom em{color:var(--orange);font-style:normal}
+.esubj{font-family:'Bebas Neue',sans-serif;font-size:1.15rem;letter-spacing:.06em;margin-bottom:.9rem}
+.ebody{font-family:'Crimson Pro',serif;font-size:.97rem;line-height:1.8;color:rgba(255,255,255,.7)}.ebody p{margin-bottom:.65rem}
+.chk-row{display:flex;align-items:flex-start;gap:.75rem;margin-bottom:1.1rem;cursor:pointer}
+.chk-row input[type=checkbox]{accent-color:var(--teal);width:15px;height:15px;margin-top:3px;flex-shrink:0}
+.chk-row label{font-size:.73rem;letter-spacing:.1em;color:rgba(255,255,255,.55);cursor:pointer;line-height:1.55}
+
+/* VIDEO PHASE */
+.v-wrap{position:relative;width:100%;aspect-ratio:16/9;background:#000;border:1px solid rgba(255,255,255,.07);margin-bottom:1.1rem;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.v-wrap video,.v-wrap iframe{position:absolute;inset:0;width:100%;height:100%;border:none}
+.v-ph{text-align:center;color:rgba(255,255,255,.2)}.v-ph-ico{font-size:2.8rem;margin-bottom:.4rem}.v-ph p{font-size:.6rem;letter-spacing:.25em;text-transform:uppercase}
+.v-note{font-size:.62rem;letter-spacing:.13em;color:rgba(255,255,255,.22);margin-bottom:1rem;line-height:1.6}
+.btn-row{display:flex;gap:.8rem}
+
+/* STATION PHASE */
+.stn-hdr{background:var(--card);border:1px solid var(--border);padding:1.3rem 1.4rem;margin-bottom:1.1rem;position:relative;overflow:hidden}
+.stn-hdr::before{content:'';position:absolute;top:-1px;left:-1px;width:28px;height:28px;border-top:2px solid var(--teal);border-left:2px solid var(--teal)}
+.stn-hdr::after{content:'';position:absolute;bottom:-1px;right:-1px;width:28px;height:28px;border-bottom:2px solid var(--orange);border-right:2px solid var(--orange)}
+.sn{font-size:.52rem;letter-spacing:.4em;color:var(--orange);text-transform:uppercase;margin-bottom:.3rem}
+.stit{font-family:'Bebas Neue',sans-serif;font-size:clamp(1.6rem,5vw,2.4rem);letter-spacing:.05em;line-height:1;margin-bottom:.45rem}
+.sdesc{font-family:'Crimson Pro',serif;font-style:italic;font-size:.92rem;color:rgba(255,255,255,.48);line-height:1.65}
+
+/* PROGRESS */
+.prog{margin-bottom:1.1rem}
+.prog-lbl{font-size:.52rem;letter-spacing:.25em;color:rgba(255,255,255,.22);text-transform:uppercase;display:flex;justify-content:space-between;margin-bottom:.35rem}
+.prog-tr{height:2px;background:rgba(255,255,255,.06)}
+.prog-fi{height:100%;background:linear-gradient(90deg,var(--teal),var(--orange));transition:width .5s ease}
+
+/* QUESTION CARD */
+.qc{background:var(--card);border:1px solid var(--border);margin-bottom:.85rem;overflow:hidden;transition:border-color .25s}
+.qc.solved{border-color:rgba(0,229,200,.28)}.qc.shake{animation:shake .3s ease}
+@keyframes shake{0%,100%{transform:none}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+.qh{padding:.7rem 1.05rem;background:rgba(0,0,0,.3);border-bottom:1px solid var(--border);display:flex;align-items:flex-start;gap:.7rem}
+.qn{width:21px;height:21px;border:1px solid rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;font-size:.58rem;color:rgba(255,255,255,.3);flex-shrink:0;margin-top:2px}
+.qc.solved .qn{border-color:var(--teal);color:var(--teal);background:rgba(0,229,200,.08)}
+.qtxt{font-size:var(--q-fs);font-weight:var(--q-fw);color:var(--q-col);line-height:1.55;font-family:'Crimson Pro',serif}
+.qb{padding:.85rem 1.05rem}
+
+/* ABCD grid */
+.choices{display:grid;grid-template-columns:1fr 1fr;gap:.45rem}
+@media(max-width:460px){.choices{grid-template-columns:1fr}}
+.ch{display:flex;align-items:flex-start;gap:.65rem;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.07);padding:.65rem .85rem;cursor:pointer;transition:all .18s;text-align:left;width:100%;font-family:'Share Tech Mono',monospace;font-size:.77rem;color:rgba(255,255,255,.68);line-height:1.4}
+.ch:hover:not(:disabled){border-color:var(--teal);background:rgba(0,229,200,.06);color:#fff}
+.ch:disabled{cursor:default}
+.ch.correct{border-color:var(--teal)!important;background:rgba(0,229,200,.11)!important;color:var(--teal)!important}
+.ch.wrong{border-color:var(--red)!important;background:rgba(255,26,26,.07)!important;color:var(--red)!important}
+.cl{font-size:.6rem;color:rgba(255,255,255,.22);min-width:1rem;flex-shrink:0;margin-top:1px}
+.ch.correct .cl{color:var(--teal)}.ch.wrong .cl{color:var(--red)}
+.qfb{font-size:.63rem;letter-spacing:.14em;padding:.4rem 1.05rem .65rem;display:none}
+.qfb.on{display:block}.qfb.ok{color:var(--teal)}.qfb.bad{color:var(--red)}
+
+/* Attempts dots */
+.att-row{display:flex;gap:.3rem;margin-bottom:.55rem}
+.ad{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.13)}
+.ad.used{background:rgba(255,26,26,.45);border-color:var(--red)}
+
+/* SUCCESS */
+#succ{display:none;border:1px solid rgba(0,229,200,.28);background:rgba(0,229,200,.03);padding:1.8rem;text-align:center;position:relative;overflow:hidden;margin-top:1.1rem}
+#succ::before{content:'';position:absolute;top:-1px;left:-1px;width:22px;height:22px;border-top:2px solid var(--teal);border-left:2px solid var(--teal)}
+#succ::after{content:'';position:absolute;bottom:-1px;right:-1px;width:22px;height:22px;border-bottom:2px solid var(--teal);border-right:2px solid var(--teal)}
+.si{font-size:2rem;margin-bottom:.6rem}
+.stitle{font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:.1em;color:var(--teal);margin-bottom:.35rem}
+.ssub{font-family:'Crimson Pro',serif;font-style:italic;color:rgba(255,255,255,.42);margin-bottom:1.1rem;font-size:.92rem}
+.hint-box{background:rgba(0,0,0,.45);border:1px solid rgba(255,106,0,.22);padding:1rem;text-align:left;margin-bottom:.7rem}
+.hl{font-size:.5rem;letter-spacing:.38em;color:var(--orange);text-transform:uppercase;margin-bottom:.45rem}
+.ht{font-family:'Crimson Pro',serif;font-size:.97rem;color:rgba(255,255,255,.72);line-height:1.7}
+.hi{width:100%;margin-top:.65rem;border:1px solid rgba(255,255,255,.07);display:none}
+.hi.on{display:block}
+.stime{font-size:.58rem;letter-spacing:.22em;color:rgba(255,255,255,.18);text-transform:uppercase;margin-top:.7rem}
+.stime b{color:var(--orange)}
+
+/* MAP */
+.map-box{margin-top:1rem;border:1px solid rgba(255,106,0,.22);background:rgba(0,0,0,.4);overflow:hidden}
+.map-lbl{font-size:.5rem;letter-spacing:.38em;color:var(--orange);text-transform:uppercase;padding:.6rem 1rem .3rem}
+.map-img{width:100%;display:block;max-height:340px;object-fit:contain;background:#000}
+.map-ph{padding:1rem;font-size:.65rem;letter-spacing:.15em;color:rgba(255,255,255,.2);text-align:center}
+
+/* HINT BUTTON */
+.hint-btn{width:100%;margin-top:.55rem;background:transparent;border:1px solid rgba(255,106,0,.3);color:rgba(255,106,0,.7);font-family:'Share Tech Mono',monospace;font-size:.65rem;letter-spacing:.2em;padding:.6rem;cursor:pointer;transition:all .2s;text-transform:uppercase}
+.hint-btn:hover{border-color:var(--orange);color:var(--orange);background:rgba(255,106,0,.06)}
+.hint-btn:disabled{opacity:.3;cursor:not-allowed}
+.hint-used{font-size:.6rem;letter-spacing:.18em;color:rgba(255,106,0,.5);padding:.35rem 1.05rem .1rem;text-align:center}
+
+/* PENALTY FLASH */
+.pen-flash{position:fixed;inset:0;background:rgba(255,26,26,.18);pointer-events:none;z-index:9997;opacity:0;transition:opacity .15s}
+.pen-flash.on{opacity:1}
+.pen-msg{position:fixed;top:70px;left:50%;transform:translateX(-50%);background:rgba(255,26,26,.9);color:#fff;font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:.15em;padding:.45rem 1.4rem;z-index:10000;pointer-events:none;opacity:0;transition:opacity .2s}
+.pen-msg.on{opacity:1}
+
+/* GAME OVER */
+#ph-over{text-align:center;padding:3rem 1rem}
+.go{font-family:'Bebas Neue',sans-serif;font-size:clamp(3rem,10vw,6rem);color:var(--red);text-shadow:0 0 40px rgba(255,26,26,.5);letter-spacing:.05em}
+.gosub{font-family:'Crimson Pro',serif;font-style:italic;color:rgba(255,255,255,.3);margin-top:.65rem}
+
+/* LEADERBOARD */
+.lb-wrap{max-width:480px;margin:0 auto;padding:2rem 1.5rem}
+.lb-title{font-family:'Bebas Neue',sans-serif;font-size:2.5rem;letter-spacing:.1em;color:var(--teal);text-align:center;margin-bottom:.3rem}
+.lb-sub{font-family:'Crimson Pro',serif;font-style:italic;color:rgba(255,255,255,.35);text-align:center;margin-bottom:1.5rem;font-size:.9rem}
+.lb-row{display:flex;align-items:center;gap:1rem;padding:.7rem 1rem;border:1px solid var(--border);background:var(--card);margin-bottom:.45rem;position:relative}
+.lb-row.me{border-color:rgba(0,229,200,.4);background:rgba(0,229,200,.04)}
+.lb-pos{font-family:'Bebas Neue',sans-serif;font-size:1.4rem;color:rgba(255,255,255,.2);min-width:1.6rem;text-align:center}
+.lb-row:nth-child(1) .lb-pos{color:gold}
+.lb-row:nth-child(2) .lb-pos{color:silver}
+.lb-row:nth-child(3) .lb-pos{color:#cd7f32}
+.lb-name{flex:1;font-size:.82rem;letter-spacing:.08em}
+.lb-time{font-family:'Share Tech Mono',monospace;font-size:.88rem;color:var(--orange)}
+.lb-pen{font-size:.58rem;color:rgba(255,26,26,.6);letter-spacing:.1em}
+
+@media(max-width:460px){main{padding:1.2rem 1rem 4rem}header{padding:.65rem 1rem}}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+</head>
+<body>
+<div class="pen-flash" id="penFlash"></div>
+<div class="pen-msg" id="penMsg">⚠ PENALIZACE</div>
+<div class="bg-glow"></div>
+<div class="glov" id="glov"></div>
+
+<header>
+  <div style="display:flex;align-items:center;gap:.85rem">
+    <div class="logo">BOMB<em>ER</em>MAN</div>
+    <div class="stn-badge" id="hBadge">STN —</div>
+  </div>
+  <div class="hdr-r">
+    <div class="team-pill" id="hTeam">Tým: <b id="hTName">—</b></div>
+    <div class="hdr-timer" id="hTimer"><div class="tdot"></div><span id="tVal">60:00</span></div>
+  </div>
+</header>
+
+<main>
+
+<!-- PHASE: email -->
+<div class="phase active" id="ph-email">
+  <div class="card"><div class="cb">
+    <div class="ey">Přihlášení do hry</div>
+    <div class="bt">Zadej svůj<br><em>školní email</em></div>
+    <p class="st">Úvodní zadání s instrukcemi ti přijde na tvůj VŠE email.</p>
+    <input class="inp" id="eInp" type="email" placeholder="xyzabc00@vse.cz" autocomplete="off">
+    <input class="inp" id="tInp" type="text" placeholder="Název týmu..." maxlength="28" autocomplete="off">
+    <div class="errmsg" id="eErr"></div>
+    <button class="cta" id="eBtn" onclick="doEmail()">ODESLAT ZADÁNÍ NA EMAIL ⚡</button>
+    <p class="note-sm">Email musí končit <b>@vse.cz</b>. Po odeslání zkontroluj školní schránku.</p>
+  </div></div>
+</div>
+
+<!-- PHASE: verify code -->
+<div class="phase" id="ph-verify">
+  <div class="card"><div class="cb">
+    <div class="ey">Ověření emailu</div>
+    <div class="bt">Zadej kód<br><em>z emailu</em></div>
+    <p class="st">Právě jsme odeslali 4místný kód na tvůj VŠE email. Zkontroluj schránku a zadej kód níže.</p>
+    <input class="inp" id="codeInp" type="text" placeholder="XXXX" maxlength="4" autocomplete="off" style="text-align:center;font-size:2rem;letter-spacing:.5em">
+    <div class="errmsg" id="codeErr"></div>
+    <button class="cta" id="codeBtn" onclick="doVerify()">OVĚŘIT KÓD ⚡</button>
+    <p class="note-sm">Kód je platný po dobu 10 minut. Nekopíruj kód — zadej ho ručně.</p>
+  </div></div>
+</div>
+
+<!-- PHASE: confirm -->
+<div class="phase" id="ph-confirm">
+  <div class="card"><div class="cb">
+    <div class="ey">Zkontroluj email</div>
+    <div class="bt">Zadání <em>doručeno</em></div>
+    <p class="st">Přečti si instrukce a potvrď přečtení.</p>
+    <div class="email-box">
+      <div class="efrom">Od: <em><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="91f3fefcf3f4e3fcf0ffd1e7e2f4bff2eb">[email&#160;protected]</a></em> &nbsp;·&nbsp; Pro: <em id="eTo">—</em></div>
+      <div class="esubj" id="eSubj">Instrukce ke hře</div>
+      <div class="ebody" id="eBody"><p>Načítám...</p></div>
+    </div>
+    <div class="chk-row">
+      <input type="checkbox" id="chk">
+      <label for="chk">Přečetl/a jsem instrukce a jsem připraven/a začít.</label>
+    </div>
+    <button class="cta" id="confBtn" onclick="doConfirm()" disabled>POTVRDIT A POKRAČOVAT</button>
+  </div></div>
+</div>
+
+<!-- PHASE: video -->
+<div class="phase" id="ph-video">
+  <div class="card"><div class="cb">
+    <div class="ey">Úvodní video</div>
+    <div class="bt">Sleduj <em>pozorně</em></div>
+    <div class="v-wrap" id="vWrap">
+      <div class="v-ph"><div class="v-ph-ico">🎬</div><p>Video bude doplněno administrátorem</p></div>
+    </div>
+    <p class="v-note">Po zhlédnutí videa můžeš spustit hru — odpočet 60 minut začne běžet okamžitě.</p>
+    <div class="btn-row">
+      <button class="cta" id="startBtn" onclick="doStart()" style="flex:1" disabled>⏳ NEJPRVE ZHLÉDNI VIDEO</button>
+    </div>
+  </div></div>
+</div>
+
+<!-- PHASE: station -->
+<div class="phase" id="ph-station">
+  <div class="stn-hdr">
+    <div class="sn" id="sNum">Stanoviště 1 / 6</div>
+    <div class="stit" id="sTit">—</div>
+    <div class="sdesc" id="sDesc"></div>
+  </div>
+  <div class="prog">
+    <div class="prog-lbl"><span>Postup</span><span id="pTxt">0 / 0</span></div>
+    <div class="prog-tr"><div class="prog-fi" id="pFill" style="width:0%"></div></div>
+  </div>
+  <div id="qCont"></div>
+  <div id="succ">
+    <div class="si">✅</div>
+    <div class="stitle">Stanoviště splněno!</div>
+    <div class="ssub">Správně jsi odpověděl/a na všechny otázky.</div>
+    <div class="hint-box">
+      <div class="hl">📍 Kde najdeš další QR kód</div>
+      <div class="ht" id="hTxt">—</div>
+      <img class="hi" id="hImg" src="" alt="">
+    </div>
+    <div class="map-box" id="mapBox" style="display:none">
+      <div class="map-lbl">🗺 Mapa areálu</div>
+      <img class="map-img" id="mapImg" src="" alt="Mapa">
+    </div>
+    <div class="stime">Čas stanoviště: <b id="sT">—</b></div>
+  </div>
+</div>
+
+<!-- PHASE: game over -->
+<div class="phase" id="ph-over">
+  <div class="go">ČAS VYPRŠEL</div>
+  <div class="gosub">Bomberman vyhrál. Tentokrát.</div>
+</div>
+
+<!-- PHASE: leaderboard -->
+<div class="phase" id="ph-lb">
+  <div class="lb-wrap">
+    <div class="lb-title">VÝSLEDKY</div>
+    <div class="lb-sub">Týmy které dokončily hru</div>
+    <div id="lbList"></div>
+  </div>
+</div>
+
+</main>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+const EMAILJS_SERVICE='service_10kyohd';
+const EMAILJS_TEMPLATE='template_vhfo7vb';
+const EMAILJS_KEY='rgDAAIyQfdbAmfCsB';
+emailjs.init(EMAILJS_KEY);
+// localStorage místo sessionStorage — přežije zavření záložky a přechod mezi stanovišti
+const LS_TID='bm_tid',LS_NAME='bm_name',LS_EMAIL='bm_email';
+const LETTERS=['A','B','C','D','E','F'];
+
+function gd(){try{return JSON.parse(localStorage.getItem(GK))||def()}catch(e){return def()}}
+function gt(){try{return JSON.parse(localStorage.getItem(TK))||{}}catch(e){return{}}}
+function st(d){localStorage.setItem(TK,JSON.stringify(d))}
+
+function def(){return{settings:{gameDuration:60,videoUrl:'https://youtu.be/yKcyzTK5qnQ',questionsPerStation:1,maxAttempts:3,penaltyMinutes:2,hintPenaltyMinutes:1,questionStyle:{},
+  emailSubject:'Vítej v Bomberman VŠE — instrukce ke hře',
+  emailBody:'<p>Vítej v tajné hře <strong>Bomberman VŠE</strong>!</p><p>Tvým úkolem je projít všemi stanovišti v NB. Na každém najdeš QR kód — po naskenování zodpovíš sadu otázek a obdržíš nápovědu k dalšímu.</p><p><strong>Pravidla:</strong><br>• 60 minut od startu<br>• Každý tým hraje samostatně<br>• Odpovědi A–D<br>• Každá otázka má omezený počet pokusů</p><p>Hodně štěstí.<br><em>— Bomberman</em></p>'},
+stations:[
+{id:1,title:'Vstupní hala',active:true,desc:'Jsi na prvním stanovišti. Rozhlédni se.',hint:'Druhý QR kód najdeš na nástěnce u knihovny v 1. patře NB.',hintImage:'',mapImage:'',
+battery:[
+{id:'1_1',text:'Kolik náhradních kreditů dostane student FPH při zápisu do 2. ročníku?',choices:['10','15','20','25'],correct:2},
+{id:'1_2',text:'Ve kterém patře NB se nachází studijní oddělení?',choices:['Přízemí','1. patro','2. patro','3. patro'],correct:1},
+{id:'1_3',text:'Jak se zkracuje Nová budova VŠE?',choices:['NB','VŠE','NHF','NK'],correct:0},
+{id:'1_4',text:'Kolik fakult má VŠE Praha celkem?',choices:['4','5','6','7'],correct:2},
+{id:'1_5',text:'Ve kterém roce VŠE Praha získala statut výzkumné univerzity?',choices:['2005','2010','2015','2020'],correct:2}]},
+{id:2,title:'Knihovna',active:true,desc:'Tichá zbraň vědění.',hint:'Třetí QR kód je ukrytý u kopírky v 2. patře NB.',hintImage:'',mapImage:'',
+battery:[
+{id:'2_1',text:'Jak se jmenuje knihovní systém VŠE?',choices:['Aleph','Koha','Evergreen','Sierra'],correct:0},
+{id:'2_2',text:'Jakou barvou jsou označeny knihy z povinné literatury?',choices:['Modrou','Zelenou','Červenou','Žlutou'],correct:2},
+{id:'2_3',text:'Jak dlouho si standardně půjčíš knihu?',choices:['2 týdny','1 měsíc','3 měsíce','Půl roku'],correct:1},
+{id:'2_4',text:'Kde se nachází studovna tisku v NB?',choices:['Přízemí','1. patro','2. patro','3. patro'],correct:0},
+{id:'2_5',text:'Kolik výpůjčních míst má knihovna VŠE?',choices:['1','2','3','4'],correct:1}]},
+{id:3,title:'Aula',active:true,desc:'Stovky hlasů, jedno místo.',hint:'Čtvrtý QR kód visí na dveřích do kantýny.',hintImage:'',mapImage:'',
+battery:[
+{id:'3_1',text:'Jaká je přibližná kapacita hlavní auly VŠE?',choices:['200 míst','350 míst','500 míst','800 míst'],correct:2},
+{id:'3_2',text:'V jakém roce byla Nová budova VŠE otevřena?',choices:['1989','1993','1997','2001'],correct:2},
+{id:'3_3',text:'Jaká akce se koná v aule na začátku každého akademického roku?',choices:['Imatrikulace','Graduace','Sportovní den','Veletrh práce'],correct:0},
+{id:'3_4',text:'Kolik pater má Nová budova VŠE?',choices:['3','4','5','6'],correct:2},
+{id:'3_5',text:'Jak se jmenuje studentský spolek VŠE?',choices:['BEST','AIESEC','ESN','VŠEka'],correct:1}]},
+{id:4,title:'Kantýna',active:true,desc:'Energie pro mozek.',hint:'Pátý QR kód najdeš u vstupu do Rajské budovy.',hintImage:'',mapImage:'',
+battery:[
+{id:'4_1',text:'Jak se jmenuje studentský bar/klub VŠE?',choices:['VŠE Bar','Rajce','Menza plus','Zítra'],correct:1},
+{id:'4_2',text:'Přibližná cena standardního obědového menu?',choices:['60–80 Kč','80–110 Kč','120–160 Kč','170–200 Kč'],correct:1},
+{id:'4_3',text:'Kolik dnů v týdnu je kantýna v NB otevřena?',choices:['3','4','5','7'],correct:2},
+{id:'4_4',text:'Kde se nachází hlavní jídelna v NB?',choices:['Přízemí','1. patro','Suterén','3. patro'],correct:0},
+{id:'4_5',text:'Jak se nazývá studentský gastro projekt na VŠE?',choices:['VŠE Food','MenzaVŠE','Foodie VSE','Bufet NB'],correct:1}]},
+{id:5,title:'Rajská budova',active:true,desc:'Páté stanoviště. Skoro tam.',hint:'Šestý QR kód je na sekretariátu FPH.',hintImage:'',mapImage:'',
+battery:[
+{id:'5_1',text:'Co znamená zkratka FPH?',choices:['Fakulta podnikání a hospodářství','Fakulta podnikohospodářská','Fakulta pro hospodaření','Fakualta pro hospodárnost'],correct:1},
+{id:'5_2',text:'Jak se zkracuje Rajská budova?',choices:['RB','RJ','RaB','RA'],correct:0},
+{id:'5_3',text:'Která fakulta VŠE sídlí primárně v Rajské budově?',choices:['FIS','FFÚ','FPH','FM'],correct:2},
+{id:'5_4',text:'Ve které budově sídlí rektorát VŠE?',choices:['NB','RB','SB','MB'],correct:0},
+{id:'5_5',text:'Přibližný počet studentů VŠE?',choices:['5 000','10 000','15 000','20 000'],correct:2}]},
+{id:6,title:'Finální stanoviště',active:true,desc:'Toto je konec. Zastav odpočet.',hint:'🎉 Gratulujeme! Nahlaste čas rozhodčímu.',hintImage:'',mapImage:'',
+battery:[
+{id:'6_1',text:'Kolik stanovišť jsi celkem absolvoval/a?',choices:['4','5','6','7'],correct:2},
+{id:'6_2',text:'Jak se jmenuje záhadná postava, která hru připravila?',choices:['Pacman','Mario','Bomberman','Sonic'],correct:2},
+{id:'6_3',text:'V jaké budově VŠE celá hra probíhala?',choices:['Rajská budova','Nová budova','Žižňák','SB'],correct:1},
+{id:'6_4',text:'Kolik minut měl tým na celou hru?',choices:['30','45','60','90'],correct:2},
+{id:'6_5',text:'Co máte udělat jako první po dokončení hry?',choices:['Jít domů','Nahlásit čas rozhodčímu','Napsat na Instagram','Zavolat Bombermanovi'],correct:1}]}
+]}}
+
+// ── STATE ──
+let timerIv=null,activeStn=null,assignedQs=[],stnStart=null,verifyCode=null;
+
+// ── PHASES ──
+function show(id){document.querySelectorAll('.phase').forEach(p=>p.classList.remove('active'));document.getElementById('ph-'+id).classList.add('active')}
+
+// ── INIT ──
+window.addEventListener('load',()=>{
+  const d=gd(),qs=d.settings?.questionStyle||{};
+  if(qs.fontSize)  document.documentElement.style.setProperty('--q-fs',qs.fontSize);
+  if(qs.fontWeight)document.documentElement.style.setProperty('--q-fw',qs.fontWeight);
+  if(qs.color)     document.documentElement.style.setProperty('--q-col',qs.color);
+
+  const sid=parseInt(new URLSearchParams(window.location.search).get('station'))||1;
+  const tid=localStorage.getItem(LS_TID);
+  if(tid){const teams=gt();if(teams[tid]?.startTime){showHeaders(teams[tid].name);loadStn(sid,tid);return;}}
+  // Na stanovišti > 1 bez session: zjednodušená obrazovka (bez emailu)
+  if(sid>1){
+    document.getElementById('eInp').style.display='none';
+    document.querySelector('.note-sm').style.display='none';
+    document.getElementById('eBtn').textContent='POKRACOVAT VE HRE';
+    document.querySelector('#ph-email .bt').innerHTML='Pokracovat<br><em>ve hre</em>';
+    document.querySelector('#ph-email .st').textContent='Zadej nazev sveho tymu pro obnoveni.';
+  }
+  show('email');
+});
+
+function showHeaders(name){
+  document.getElementById('hTeam').style.display='flex';
+  document.getElementById('hTName').textContent=name||'—';
+}
+
+// ── PHASE 1: EMAIL ──
+function doEmail(){
+  const sid=parseInt(new URLSearchParams(window.location.search).get('station'))||1;
+  const emailEl=document.getElementById('eInp');
+  const email=emailEl.style.display==='none'?'':emailEl.value.trim().toLowerCase();
+  const team=document.getElementById('tInp').value.trim();
+  const err=document.getElementById('eErr');
+  if(sid===1&&!email.endsWith('@vse.cz')){err.textContent='Email musí končit @vse.cz';return}
+  if(!team){err.textContent='Zadej název týmu';return}
+  err.textContent='';
+  const btn=document.getElementById('eBtn');
+  btn.disabled=true;btn.textContent='ODESÍLÁM...';
+  localStorage.setItem(LS_EMAIL,email);localStorage.setItem(LS_NAME,team);
+
+  // Na stanovišti > 1 bez aktivní session: pokus se najít tým podle jména
+  if(sid>1){
+    const teams=gt();
+    const found=Object.entries(teams).find(([id,t])=>t.name===team&&t.startTime);
+    if(found){
+      localStorage.setItem(LS_TID,found[0]);
+      showHeaders(found[1].name);
+      btn.disabled=false;
+      loadStn(sid,found[0]);
+      return;
+    } else {
+      err.textContent='Tým nebyl nalezen. Zkontroluj název.';
+      btn.disabled=false;btn.textContent='POKRACOVAT VE HRE';
+      return;
+    }
+  }
+
+  // Stanoviště 1 — vygeneruj kód a odešli emailem
+  const d=gd();
+  verifyCode=String(Math.floor(1000+Math.random()*9000));
+  emailjs.send(EMAILJS_SERVICE, EMAILJS_TEMPLATE, {
+    to_email: email,
+    email_subject: 'Bomberman VŠE — ověřovací kód',
+    email_body: `Tvůj ověřovací kód pro vstup do hry je:\n\n<strong style="font-size:2rem;letter-spacing:.3em">${verifyCode}</strong>\n\nZadej ho ve hře. Kód je platný 10 minut.\n\n— Bomberman`
+  }).then(()=>{
+    btn.disabled=false;btn.textContent='ODESLAT ZADÁNÍ NA EMAIL ⚡';
+    show('verify');
+  }).catch(()=>{
+    err.textContent='Nepodařilo se odeslat email. Zkus to znovu.';
+    btn.disabled=false;btn.textContent='ODESLAT ZADÁNÍ NA EMAIL ⚡';
+    verifyCode=null;
+  });
+}
+document.getElementById('eInp').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('tInp').focus()});
+document.getElementById('tInp').addEventListener('keydown',e=>{if(e.key==='Enter')doEmail()});
+
+// ── VERIFY CODE ──
+function doVerify(){
+  const entered=document.getElementById('codeInp').value.trim();
+  const err=document.getElementById('codeErr');
+  if(!verifyCode){err.textContent='Kód vypršel. Vrať se zpět a zkus znovu.';return}
+  if(entered!==verifyCode){err.textContent='Špatný kód. Zkontroluj email a zkus znovu.';return}
+  err.textContent='';
+  // Kód správný — zobraz instrukce
+  const d=gd();
+  const email=localStorage.getItem(LS_EMAIL)||'';
+  document.getElementById('eTo').textContent=email;
+  document.getElementById('eSubj').textContent=d.settings.emailSubject||'Instrukce ke hře';
+  document.getElementById('eBody').innerHTML=d.settings.emailBody||'<p>Instrukce budou doplněny administrátorem.</p>';
+  // Teď odešli skutečný email s instrukcemi
+  emailjs.send(EMAILJS_SERVICE, EMAILJS_TEMPLATE, {
+    to_email: email,
+    email_subject: d.settings.emailSubject||'Instrukce ke hře — Bomberman VŠE',
+    email_body: d.settings.emailBody||'Vítej v Bomberman VŠE!'
+  });
+  verifyCode=null;
+  show('confirm');
+}
+document.getElementById('codeInp').addEventListener('keydown',e=>{if(e.key==='Enter')doVerify()});
+document.getElementById('chk').addEventListener('change',function(){document.getElementById('confBtn').disabled=!this.checked});
+function doConfirm(){
+  const d=gd();
+  const startBtn=document.getElementById('startBtn');
+  if(d.settings?.videoUrl){
+    const vw=document.getElementById('vWrap');
+    let url=d.settings.videoUrl;
+    if(url.includes('youtube.com/watch?v='))url=url.replace('watch?v=','embed/');
+    else if(url.includes('youtu.be/'))url='https://www.youtube.com/embed/'+url.split('youtu.be/')[1];
+    if(url.includes('youtube')||url.includes('vimeo')){
+      // Pro YouTube/Vimeo nelze spolehlivě detekovat konec — povolíme po 40s
+      vw.innerHTML=`<iframe src="${url}" allowfullscreen allow="autoplay"></iframe>`;
+      setTimeout(()=>{startBtn.disabled=false;startBtn.textContent='⚡ SPUSTIT HRU';},40000);
+    } else {
+      const vid=document.createElement('video');
+      vid.src=url;vid.controls=true;vid.playsInline=true;vid.style='position:absolute;inset:0;width:100%;height:100%';
+      vid.addEventListener('ended',()=>{startBtn.disabled=false;startBtn.textContent='⚡ SPUSTIT HRU';});
+      vw.innerHTML='';vw.appendChild(vid);
+    }
+  } else {
+    // Žádné video — rovnou povol tlačítko
+    startBtn.disabled=false;startBtn.textContent='⚡ SPUSTIT HRU';
+  }
+  show('video');
+}
+
+// ── PHASE 3: START ──
+function doStart(){
+  const name=localStorage.getItem(LS_NAME)||'Tým';
+  const email=localStorage.getItem(LS_EMAIL)||'';
+  const tid='tm_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,5);
+  localStorage.setItem(LS_TID,tid);
+  const teams=gt();
+  teams[tid]={name,email,startTime:Date.now(),stations:{}};
+  st(teams);showHeaders(name);
+  const sid=parseInt(new URLSearchParams(window.location.search).get('station'))||1;
+  loadStn(sid,tid);
+}
+
+// ── LOAD STATION ──
+function loadStn(sid,tid){
+  const d=gd(),teams=gt(),stn=d.stations.find(s=>s.id===sid);
+  if(!stn){show('station');document.getElementById('sTit').textContent='Stanoviště nenalezeno';return}
+  activeStn=stn;
+  const N=d.settings?.questionsPerStation||3;
+  if(!teams[tid].stations[sid]){
+    const shuffled=[...stn.battery].sort(()=>seeded(tid+sid)-.5);
+    const picked=shuffled.slice(0,Math.min(N,shuffled.length));
+    teams[tid].stations[sid]={assigned:picked.map(q=>q.id),solved:[],attempts:{},startTime:Date.now(),endTime:null};
+    st(teams);
+  }
+  stnStart=teams[tid].stations[sid].startTime||Date.now();
+  const ids=teams[tid].stations[sid].assigned;
+  assignedQs=ids.map(id=>stn.battery.find(q=>q.id===id)).filter(Boolean);
+
+  document.getElementById('hBadge').style.display='block';
+  document.getElementById('hBadge').textContent='STN '+sid;
+  document.getElementById('sNum').textContent='Stanoviště '+sid+' / '+d.stations.filter(s=>s.active).length;
+  document.getElementById('sTit').textContent=stn.title;
+  document.getElementById('sDesc').textContent=stn.desc||'';
+
+  show('station');
+  startTimer(teams[tid].startTime,d.settings?.gameDuration||60);
+  renderQs(tid,sid,d.settings?.maxAttempts||3,d.settings?.penaltyMinutes??2,d.settings?.hintPenaltyMinutes??1);
+  updProg(tid,sid);
+  if(teams[tid].stations[sid].solved.length>=assignedQs.length)showSucc(sid,tid);
+}
+
+function seeded(s){let h=0;for(let i=0;i<s.length;i++)h=Math.imul(31,h)+s.charCodeAt(i)|0;h=Math.imul(h^(h>>>16),0x45d9f3b)|0;return((h^(h>>>16))>>>0)/4294967296}
+
+// ── TIMER ──
+function startTimer(ts,dur,penMs){
+  const total=dur*60000,el=document.getElementById('tVal'),wrap=document.getElementById('hTimer');
+  wrap.style.display='flex';
+  if(timerIv)clearInterval(timerIv);
+  function tick(){
+    const teams=gt(),tid2=localStorage.getItem(LS_TID);
+    const pen=(teams[tid2]?.penalties||0)*60000;
+    const rem=Math.max(0,total-(Date.now()-ts)-pen);
+    const m=Math.floor(rem/60000),s=Math.floor((rem%60000)/1000);
+    el.textContent=String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+    if(rem<300000)wrap.classList.add('warn');else wrap.classList.remove('warn');
+    if(rem===0){clearInterval(timerIv);show('over')}
+  }
+  tick();timerIv=setInterval(tick,1000);
+}
+
+function addPenalty(mins,label){
+  const tid=localStorage.getItem(LS_TID);if(!tid)return;
+  const teams=gt();
+  teams[tid].penalties=(teams[tid].penalties||0)+mins;
+  st(teams);
+  const d=gd();
+  const msg=document.getElementById('penMsg');
+  msg.textContent=`⚠ PENALIZACE +${mins} MIN — ${label}`;
+  msg.classList.add('on');
+  const fl=document.getElementById('penFlash');
+  fl.classList.add('on');
+  setTimeout(()=>{msg.classList.remove('on');fl.classList.remove('on');},1800);
+}
+
+// ── RENDER QUESTIONS ──
+function renderQs(tid,sid,maxAtt,penMin,hintPenMin){
+  const cont=document.getElementById('qCont');
+  const teams=gt(),sd=teams[tid]?.stations[sid]||{solved:[],attempts:{},hints:{}};
+  cont.innerHTML='';
+  assignedQs.forEach((q,i)=>{
+    const solved=sd.solved.includes(q.id);
+    const att=sd.attempts[q.id]||0;
+    const exhausted=att>=maxAtt&&!solved;
+    const hintUsed=sd.hints?.[q.id]||false;
+    const card=document.createElement('div');
+    card.className='qc'+(solved?' solved':'');card.id='qc_'+q.id;
+    let dotsHtml=(!solved&&maxAtt>1)?'<div class="att-row">'+Array.from({length:maxAtt},(_,di)=>`<div class="ad${di<att?' used':''}"></div>`).join('')+'</div>':'';
+    let body='';
+    if(solved)body='<div style="font-size:.68rem;letter-spacing:.2em;color:var(--teal);padding:.2rem 0">✓ SPRÁVNĚ</div>';
+    else if(exhausted)body='<div style="font-size:.68rem;letter-spacing:.18em;color:var(--red);padding:.2rem 0">✗ Vyčerpány pokusy.</div>';
+    else{
+      // Filter choices: if hint used, show only correct + 1 wrong (2 options)
+      let visibleChoices=q.choices.map((c,ci)=>({c,ci}));
+      if(hintUsed){
+        const wrongs=visibleChoices.filter(x=>x.ci!==q.correct);
+        const oneWrong=wrongs[Math.floor(seeded(q.id+'hint')*(wrongs.length))];
+        visibleChoices=[visibleChoices.find(x=>x.ci===q.correct),oneWrong].sort((a,b)=>a.ci-b.ci);
+      }
+      body='<div class="choices">'+visibleChoices.map(({c,ci})=>`<button class="ch" onclick="check('${q.id}',${ci},'${tid}','${sid}')"><span class="cl">${LETTERS[ci]}</span>${c}</button>`).join('')+'</div>';
+      if(!hintUsed){
+        body+=`<button class="hint-btn" onclick="useHint('${q.id}','${tid}','${sid}',${hintPenMin})">💡 Nápověda — zobrazit 2 možnosti (-${hintPenMin} min)</button>`;
+      } else {
+        body+=`<div class="hint-used">💡 Nápověda použita (-${hintPenMin} min)</div>`;
+      }
+    }
+    card.innerHTML=`<div class="qh"><div class="qn">${solved?'✓':i+1}</div><div class="qtxt">${q.text}</div></div><div class="qb">${dotsHtml}${body}</div><div class="qfb" id="qfb_${q.id}"></div>`;
+    cont.appendChild(card);
+  });
+}
+
+function useHint(qid,tid,sid,hintPenMin){
+  const teams=gt();
+  if(!teams[tid].stations[sid].hints)teams[tid].stations[sid].hints={};
+  teams[tid].stations[sid].hints[qid]=true;
+  st(teams);
+  addPenalty(hintPenMin,'Nápověda');
+  const d=gd();
+  renderQs(tid,sid,d.settings?.maxAttempts||3,d.settings?.penaltyMinutes??2,d.settings?.hintPenaltyMinutes??1);
+}
+
+// ── CHECK ──
+function check(qid,chosen,tid,sid){
+  const d=gd(),teams=gt(),sd=teams[tid].stations[sid];
+  const maxAtt=d.settings?.maxAttempts||3;
+  const penMin=d.settings?.penaltyMinutes??2;
+  const hintPenMin=d.settings?.hintPenaltyMinutes??1;
+  const q=assignedQs.find(q=>q.id===qid);
+  if(!q||sd.solved.includes(qid))return;
+  const card=document.getElementById('qc_'+qid);
+  const btns=card.querySelectorAll('.ch');
+  if(chosen===q.correct){
+    btns[chosen].classList.add('correct');btns.forEach(b=>b.disabled=true);
+    fb(qid,true);card.classList.add('solved');card.querySelector('.qn').textContent='✓';
+    sd.solved.push(qid);st(teams);updProg(tid,sid);
+    if(sd.solved.filter(id=>!id.endsWith('__x')).length===assignedQs.length){sd.endTime=Date.now();st(teams);setTimeout(()=>showSucc(sid,tid),550);}
+  }else{
+    sd.attempts[qid]=(sd.attempts[qid]||0)+1;st(teams);
+    // Penalizace za špatnou odpověď
+    addPenalty(penMin,'Špatná odpověď');
+    btns[chosen].classList.add('wrong');card.classList.add('shake');
+    setTimeout(()=>card.classList.remove('shake'),380);
+    const rem=maxAtt-sd.attempts[qid];
+    if(rem<=0){
+      fb(qid,false,'Vyčerpány všechny pokusy.');btns.forEach(b=>b.disabled=true);
+      sd.solved.push(qid+'__x');st(teams);
+      setTimeout(()=>{card.querySelector('.qb').innerHTML='<div style="font-size:.68rem;letter-spacing:.18em;color:var(--red);padding:.2rem 0">✗ Přeskočeno.</div>';updProg(tid,sid);const eff=gt()[tid].stations[sid].solved.filter(id=>!id.endsWith('__x'));const all=gt()[tid].stations[sid].solved;if(all.length>=assignedQs.length&&eff.length>0){const t2=gt();t2[tid].stations[sid].endTime=Date.now();st(t2);setTimeout(()=>showSucc(sid,tid),450);}},950);
+    }else{
+      fb(qid,false,`Špatně! Zbývá ${rem} pokus${rem===1?'':'y'}.`);
+      setTimeout(()=>{btns[chosen].classList.remove('wrong');btns.forEach(b=>b.disabled=false);const att2=gt()[tid].stations[sid].attempts[qid]||0;const dr=card.querySelector('.att-row');if(dr)dr.innerHTML=Array.from({length:maxAtt},(_,di)=>`<div class="ad${di<att2?' used':''}"></div>`).join('');},650);
+    }
+  }
+}
+
+function fb(qid,ok,msg){const el=document.getElementById('qfb_'+qid);el.className='qfb on '+(ok?'ok':'bad');el.textContent=ok?'✓ Správně!':(msg||'✗ Špatně!');if(ok)setTimeout(()=>el.style.display='none',2000)}
+
+function updProg(tid,sid){const teams=gt(),sv=teams[tid]?.stations[sid]?.solved||[];const tot=assignedQs.length;const eff=sv.filter(id=>!id.endsWith('__x')).length;document.getElementById('pFill').style.width=(tot?Math.round(sv.length/tot*100):0)+'%';document.getElementById('pTxt').textContent=eff+' / '+tot}
+
+function showSucc(sid,tid){
+  document.getElementById('qCont').style.opacity='.38';
+  const p=document.getElementById('succ');p.style.display='block';
+  document.getElementById('hTxt').textContent=activeStn.hint||'—';
+  const img=document.getElementById('hImg');if(activeStn.hintImage){img.src=activeStn.hintImage;img.classList.add('on')}
+  // Mapa
+  const mapBox=document.getElementById('mapBox');
+  const mapImg=document.getElementById('mapImg');
+  if(activeStn.mapImage){mapImg.src=activeStn.mapImage;mapBox.style.display='block';}else{mapBox.style.display='none';}
+  const sd=gt()[tid]?.stations[sid];
+  if(sd?.startTime&&sd?.endTime){const s=Math.round((sd.endTime-sd.startTime)/1000);document.getElementById('sT').textContent=Math.floor(s/60)+':'+String(s%60).padStart(2,'0')}
+  // Poslední stanoviště → leaderboard
+  const d=gd();
+  const activeStnIds=d.stations.filter(s=>s.active).map(s=>s.id);
+  const lastId=activeStnIds[activeStnIds.length-1];
+  if(sid===lastId){
+    // Označ tým jako dokončený
+    const teams=gt();
+    teams[tid].finishTime=Date.now();
+    st(teams);
+    setTimeout(()=>showLeaderboard(tid),1800);
+  }
+  glitch();
+}
+
+function showLeaderboard(myTid){
+  const teams=gt(),d=gd();
+  const dur=d.settings?.gameDuration||60;
+  // Seřaď dokončené týmy podle efektivního času (elapsed + penalties)
+  const finished=Object.entries(teams)
+    .filter(([id,t])=>t.finishTime&&t.startTime)
+    .map(([id,t])=>{
+      const elapsed=t.finishTime-t.startTime;
+      const pen=(t.penalties||0)*60000;
+      return{id,name:t.name,total:elapsed+pen,elapsed,pen:t.penalties||0};
+    })
+    .sort((a,b)=>a.total-b.total);
+  const list=document.getElementById('lbList');
+  if(!finished.length){list.innerHTML='<p style="text-align:center;color:rgba(255,255,255,.3);font-size:.75rem;letter-spacing:.15em">Žádné dokončené týmy.</p>';show('lb');return;}
+  list.innerHTML=finished.map((t,i)=>{
+    const m=Math.floor(t.total/60000),s=Math.floor((t.total%60000)/1000);
+    const timeStr=String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+    const isMe=t.id===myTid;
+    return`<div class="lb-row${isMe?' me':''}">
+      <div class="lb-pos">${i+1}</div>
+      <div class="lb-name">${t.name}${isMe?' <span style="font-size:.55rem;color:var(--teal);letter-spacing:.15em">← VY</span>':''}</div>
+      <div style="text-align:right"><div class="lb-time">${timeStr}</div>${t.pen>0?`<div class="lb-pen">+${t.pen} min penalizace</div>`:''}</div>
+    </div>`;
+  }).join('');
+  show('lb');
+}
+
+function glitch(){const ov=document.getElementById('glov');let n=0;const iv=setInterval(()=>{ov.style.opacity=n%2?'0':'1';ov.style.background=['r
