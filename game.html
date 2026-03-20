@@ -251,8 +251,6 @@ main{max-width:660px;margin:0 auto;padding:2rem 1.5rem 5rem}
         <ul>
           <li>Hra probíhá v týmech (doporučeno 3–5 hráčů)</li>
           <li>Každý tým používá jedno zařízení a jeden název týmu</li>
-          <li>Přihlašujete se pomocí školního e-mailu (@vse.cz)</li>
-          <li>Průběžně si zapisujte všechny získané indicie</li>
           <li>Po škole se pohybujte jako skupina</li>
           <li>Zákaz vyhledávání odpovědí</li>
         </ul>
@@ -265,14 +263,13 @@ main{max-width:660px;margin:0 auto;padding:2rem 1.5rem 5rem}
         <h2>3. Průběh hry</h2>
         <ul>
           <li>Vyřešíte úkol na stanovišti</li>
-          <li>Získáte indicii a nápovědu k další lokaci</li>
+          <li>Získáte nápovědu k další lokaci</li>
           <li>Přesunete se na další místo a naskenujete QR kód</li>
-          <li>Takto pokračujete až do finále</li>
         </ul>
       </div>
       <div class="rules-section">
         <h2>4. Indicie</h2>
-        <p>Všechny indicie si pečlivě zapisujte. Výsledným heslem finální otázky není otázka samotná, ale <b style="color:#fff">správná odpověď na ni</b>.</p>
+        <p>Indicii získanou na posledním stanovišti si pečlivě zapište — budete ji potřebovat pro deaktivaci bomby.</p>
       </div>
       <div class="rules-section">
         <h2>5. Časový limit</h2>
@@ -662,6 +659,26 @@ async function loadStn(sid, tid){
 
   const stn = d.stations.find(s=>s.id===sid);
   if(!stn){show('station');document.getElementById('sTit').textContent='Stanoviště nenalezeno';return}
+
+  // Zamčená stanoviště — zkontroluj jestli bylo předchozí stanoviště splněno
+  const activeStnIds = d.stations.filter(s=>s.active && !s.isFinal).map(s=>s.id).sort((a,b)=>a-b);
+  const stnIndex = activeStnIds.indexOf(sid);
+  if(stnIndex > 0){
+    const prevSid = activeStnIds[stnIndex - 1];
+    const prevStation = team.stations?.[prevSid];
+    const prevDone = prevStation?.solved?.length > 0;
+    if(!prevDone){
+      // Předchozí stanoviště není splněno
+      show('station');
+      document.getElementById('sTit').textContent='Stanoviště uzamčeno';
+      document.getElementById('sDesc').textContent='Nejprve musíš splnit předchozí stanoviště.';
+      document.getElementById('sNum').textContent='⛔ Přístup odepřen';
+      document.getElementById('qCont').innerHTML='<div style="text-align:center;padding:2rem;font-family:'Crimson Pro',serif;color:rgba(255,255,255,.4);font-size:.95rem;line-height:1.8">Toto stanoviště je uzamčeno.<br>Vrať se a splň předchozí stanoviště.</div>';
+      document.getElementById('succ').style.display='none';
+      startTimer(team.startTime, d.settings?.gameDuration||60);
+      return;
+    }
+  }
   activeStn = stn;
 
   const N = d.settings?.questionsPerStation||3;
@@ -886,8 +903,14 @@ async function showSucc(sid, tid){
   const d = gameData;
   const stn = d.stations.find(s=>s.id===sid);
 
-  if(stn?.generateCode){
-    // Stanoviště má flag generateCode — vygeneruj deaktivační kód
+  // Generovat kód: buď flag generateCode, nebo předposlední aktivní stanoviště před finálním
+  const activeStnIds = d.stations.filter(s=>s.active).map(s=>s.id);
+  const finalStn = d.stations.find(s=>s.isFinal);
+  const nonFinalIds = activeStnIds.filter(id => !d.stations.find(s=>s.id===id)?.isFinal);
+  const lastNonFinalId = nonFinalIds[nonFinalIds.length-1];
+  const shouldGenerateCode = stn?.generateCode || (!finalStn && false) || sid===lastNonFinalId;
+
+  if(shouldGenerateCode){
     const code = genTeamCode(tid);
     await updateTeam(tid, {deactivationCode: code});
     if(sd?.startTime&&sd?.endTime){const s=Math.round((sd.endTime-sd.startTime)/1000);document.getElementById('sT6').textContent=Math.floor(s/60)+':'+String(s%60).padStart(2,'0')}
