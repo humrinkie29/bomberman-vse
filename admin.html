@@ -159,11 +159,12 @@ tr:hover td{background:rgba(255,255,255,.015)}
       <div class="ns">Obsah</div>
       <div class="ni" onclick="nav('email',this)"><span>📧</span> Úvodní email</div>
       <div class="ni" onclick="nav('video',this)"><span>🎬</span> Úvodní video</div>
+      <div class="ni" onclick="nav('endvideo',this)"><span>🎥</span> Závěrečné video</div>
       <div class="ni" onclick="nav('style',this)"><span>🎨</span> Styl otázek</div>
       <div class="ns">Systém</div>
       <div class="ni" onclick="nav('settings',this)"><span>⚙️</span> Nastavení</div>
     </nav>
-    <div class="sf">v3.0 · Firebase RT<br>© Bomberman VŠE</div>
+    <div class="sf">v3.1 · Firebase RT<br>© Bomberman VŠE</div>
   </div>
 
   <div class="content">
@@ -265,6 +266,27 @@ tr:hover td{background:rgba(255,255,255,.015)}
         <div id="vidPrev" style="width:100%;aspect-ratio:16/9;background:#000;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.2);font-size:.65rem;letter-spacing:.2em">NÁHLED VIDEA</div>
       </div>
       <button class="btn bo" style="margin-top:.8rem" onclick="prevVideo()">Načíst náhled</button>
+    </div>
+
+    <!-- END VIDEO -->
+    <div class="sec" id="sec-endvideo">
+      <div class="tb"><div class="tbtit">Závěrečné video</div>
+        <div class="tbacts"><button class="btn bp" onclick="saveEndVideo()">Uložit</button></div>
+      </div>
+      <p style="font-size:.65rem;color:rgba(255,255,255,.3);letter-spacing:.12em;margin-bottom:1.2rem;line-height:1.6">
+        Toto video se přehraje hráčům po úspěšné deaktivaci bomby na finálním stanovišti (stanoviště 7). Podporuje YouTube, Vimeo nebo přímý odkaz na MP4.
+      </p>
+      <div class="fi"><label>URL závěrečného videa (YouTube / Vimeo / MP4)</label><input type="url" id="endVidUrl" placeholder="https://www.youtube.com/watch?v=..."></div>
+      <div style="margin-top:.5rem">
+        <div id="endVidPrev" style="width:100%;aspect-ratio:16/9;background:#000;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.2);font-size:.65rem;letter-spacing:.2em">NÁHLED VIDEA</div>
+      </div>
+      <button class="btn bo" style="margin-top:.8rem" onclick="prevEndVideo()">Načíst náhled</button>
+      <div style="margin-top:1.5rem;padding:1rem;background:rgba(0,229,200,.04);border:1px solid rgba(0,229,200,.15)">
+        <div style="font-size:.55rem;letter-spacing:.28em;color:var(--teal);text-transform:uppercase;margin-bottom:.5rem">ℹ QR kód pro stanoviště 7</div>
+        <p style="font-size:.65rem;color:rgba(255,255,255,.3);letter-spacing:.1em;line-height:1.7">
+          Finální QR kód (stanoviště 7) vygeneruj v sekci <strong style="color:rgba(255,255,255,.55)">🔲 QR kódy</strong> — URL bude <code style="color:var(--teal)">game.html?station=7</code>. Vytiskni ho a umísti na místo kde hra začala (vestibul NB).
+        </p>
+      </div>
     </div>
 
     <!-- QUESTION STYLE -->
@@ -403,6 +425,7 @@ async function initApp(){
   renderQR();
   loadEmailEditor();
   loadVideoEditor();
+  loadEndVideoEditor();
   loadStyleEditor();
   loadSettingsEditor();
 }
@@ -717,6 +740,10 @@ async function loadVideoEditor(){
   const d = await fbGet('gameData');
   document.getElementById('vidUrl').value=d?.settings?.videoUrl||'';
 }
+async function loadEndVideoEditor(){
+  const d = await fbGet('gameData');
+  document.getElementById('endVidUrl').value=d?.settings?.endVideoUrl||'';
+}
 window.prevVideo = function(){
   const url=document.getElementById('vidUrl').value.trim();
   const c=document.getElementById('vidPrev');
@@ -728,6 +755,23 @@ window.prevVideo = function(){
   else c.innerHTML=`<video src="${src}" controls style="position:absolute;inset:0;width:100%;height:100%"></video>`;
   c.style.position='relative';
 }
+window.prevEndVideo = function(){
+  const url=document.getElementById('endVidUrl').value.trim();
+  const c=document.getElementById('endVidPrev');
+  if(!url){c.textContent='NÁHLED VIDEA';c.style.position='';return}
+  let src=url;
+  if(url.includes('youtube.com/watch?v='))src=url.replace('watch?v=','embed/');
+  else if(url.includes('youtu.be/'))src='https://www.youtube.com/embed/'+url.split('youtu.be/')[1];
+  if(src.includes('youtube')||src.includes('vimeo'))c.innerHTML=`<iframe src="${src}" style="position:absolute;inset:0;width:100%;height:100%;border:none" allowfullscreen></iframe>`;
+  else c.innerHTML=`<video src="${src}" controls style="position:absolute;inset:0;width:100%;height:100%"></video>`;
+  c.style.position='relative';
+}
+window.saveEndVideo = async function(){
+  const d = await fbGet('gameData');
+  d.settings.endVideoUrl=document.getElementById('endVidUrl').value;
+  await fbSet('gameData',d);toast('Závěrečné video uloženo do Firebase!');
+}
+
 window.saveVideo = async function(){
   const d = await fbGet('gameData');
   d.settings.videoUrl=document.getElementById('vidUrl').value;
