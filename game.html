@@ -845,7 +845,7 @@ window.checkAnswer = async function(qid, chosen, tid, sid){
         const sd2 = t2?.stations?.[sid];
         const eff = sd2?.solved?.filter(id=>!id.endsWith('__x'))||[];
         const all = sd2?.solved||[];
-        if(all.length>=assignedQs.length&&eff.length>0){
+        if(all.length>=assignedQs.length){
           sd2.endTime=Date.now();
           const st2 = t2.stations;
           st2[sid]=sd2;
@@ -903,12 +903,10 @@ async function showSucc(sid, tid){
   const d = gameData;
   const stn = d.stations.find(s=>s.id===sid);
 
-  // Generovat kód: buď flag generateCode, nebo předposlední aktivní stanoviště před finálním
-  const activeStnIds = d.stations.filter(s=>s.active).map(s=>s.id);
-  const finalStn = d.stations.find(s=>s.isFinal);
-  const nonFinalIds = activeStnIds.filter(id => !d.stations.find(s=>s.id===id)?.isFinal);
-  const lastNonFinalId = nonFinalIds[nonFinalIds.length-1];
-  const shouldGenerateCode = stn?.generateCode || (!finalStn && false) || sid===lastNonFinalId;
+  // Generovat kód: flag generateCode NEBO předposlední ze všech aktivních stanovišť
+  const activeStnIds = d.stations.filter(s=>s.active).map(s=>s.id).sort((a,b)=>a-b);
+  const secondLastId = activeStnIds[activeStnIds.length-2]; // předposlední
+  const shouldGenerateCode = stn?.generateCode || sid===secondLastId;
 
   if(shouldGenerateCode){
     const code = genTeamCode(tid);
