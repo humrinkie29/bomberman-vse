@@ -673,7 +673,7 @@ async function loadStn(sid, tid){
       document.getElementById('sTit').textContent='Stanoviště uzamčeno';
       document.getElementById('sDesc').textContent='Nejprve musíš splnit předchozí stanoviště.';
       document.getElementById('sNum').textContent='⛔ Přístup odepřen';
-      document.getElementById('qCont').innerHTML='<div style="text-align:center;padding:2rem;font-family:'Crimson Pro',serif;color:rgba(255,255,255,.4);font-size:.95rem;line-height:1.8">Toto stanoviště je uzamčeno.<br>Vrať se a splň předchozí stanoviště.</div>';
+      document.getElementById('qCont').innerHTML='<div style="text-align:center;padding:2rem;color:rgba(255,255,255,.4);font-size:.95rem;line-height:1.8">Toto stanoviště je uzamčeno.<br>Vrať se a splň předchozí stanoviště.</div>';
       document.getElementById('succ').style.display='none';
       startTimer(team.startTime, d.settings?.gameDuration||60);
       return;
