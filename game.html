@@ -76,6 +76,28 @@ main{max-width:660px;margin:0 auto;padding:2rem 1.5rem 5rem}
 .qtxt{font-size:var(--q-fs);font-weight:var(--q-fw);color:var(--q-col);line-height:1.55;font-family:'Crimson Pro',serif}
 .qb{padding:.85rem 1.05rem}
 .choices{display:grid;grid-template-columns:1fr 1fr;gap:.45rem}
+
+/* FINAL STATION */
+.bomb-container{text-align:center;padding:1rem 0 1.5rem}
+.bomb-ico{font-size:4rem;animation:bombPulse 1.5s ease-in-out infinite}
+@keyframes bombPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+.bomb-ico.defused{animation:none;filter:grayscale(1);opacity:.5}
+.code-display{background:rgba(0,229,200,.06);border:1px solid rgba(0,229,200,.25);padding:1.2rem;margin:1rem 0 1.5rem;text-align:center}
+.code-label{font-size:.5rem;letter-spacing:.38em;color:var(--muted);text-transform:uppercase;margin-bottom:.5rem}
+.code-value{font-family:'Bebas Neue',sans-serif;font-size:3rem;letter-spacing:.35em;color:var(--teal);text-shadow:0 0 20px rgba(0,229,200,.4)}
+.code-warn{font-size:.62rem;letter-spacing:.14em;color:rgba(255,106,0,.7);margin-top:.5rem;line-height:1.6}
+.deactivate-box{background:var(--card);border:1px solid var(--border);padding:1.6rem;margin-bottom:1rem;position:relative;overflow:hidden}
+.deactivate-box::before{content:'';position:absolute;top:-1px;left:-1px;width:28px;height:28px;border-top:2px solid var(--red);border-left:2px solid var(--red)}
+.deactivate-box::after{content:'';position:absolute;bottom:-1px;right:-1px;width:28px;height:28px;border-bottom:2px solid var(--orange);border-right:2px solid var(--orange)}
+.deact-title{font-family:'Bebas Neue',sans-serif;font-size:1.4rem;letter-spacing:.08em;color:var(--red);margin-bottom:.35rem}
+.deact-sub{font-family:'Crimson Pro',serif;font-style:italic;font-size:.88rem;color:rgba(255,255,255,.4);margin-bottom:1.1rem;line-height:1.6}
+.code-inp-wrap{display:flex;gap:.6rem;margin-bottom:.5rem}
+.code-inp-wrap .inp{font-size:1.5rem;text-align:center;letter-spacing:.4em;margin-bottom:0;text-transform:uppercase}
+.defuse-result{display:none;text-align:center;padding:1rem 0}
+.defuse-ok{font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:.08em;color:var(--teal)}
+.defuse-fail{font-size:.7rem;letter-spacing:.18em;color:var(--red);margin-top:.5rem}
+.end-video-wrap{position:relative;width:100%;aspect-ratio:16/9;background:#000;border:1px solid rgba(255,255,255,.07);margin:1rem 0;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.end-video-wrap video,.end-video-wrap iframe{position:absolute;inset:0;width:100%;height:100%;border:none}
 @media(max-width:460px){.choices{grid-template-columns:1fr}}
 .ch{display:flex;align-items:flex-start;gap:.65rem;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.07);padding:.65rem .85rem;cursor:pointer;transition:all .18s;text-align:left;width:100%;font-family:'Share Tech Mono',monospace;font-size:.77rem;color:rgba(255,255,255,.68);line-height:1.4}
 .ch:hover:not(:disabled){border-color:var(--teal);background:rgba(0,229,200,.06);color:#fff}
@@ -129,6 +151,18 @@ main{max-width:660px;margin:0 auto;padding:2rem 1.5rem 5rem}
 .lb-time{font-family:'Share Tech Mono',monospace;font-size:.88rem;color:var(--orange)}
 .lb-pen{font-size:.58rem;color:rgba(255,26,26,.6);letter-spacing:.1em}
 .fb-loading{font-size:.7rem;letter-spacing:.2em;color:var(--muted);text-align:center;padding:2rem}
+/* RULES */
+.rules-wrap{max-width:660px}
+.rules-section{margin-bottom:1.4rem}
+.rules-section h2{font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:.12em;color:var(--teal);margin-bottom:.55rem;border-bottom:1px solid rgba(0,229,200,.15);padding-bottom:.3rem}
+.rules-section ul{list-style:none;padding:0}
+.rules-section ul li{font-family:'Crimson Pro',serif;font-size:.93rem;color:rgba(255,255,255,.68);line-height:1.7;padding-left:1rem;position:relative}
+.rules-section ul li::before{content:'—';position:absolute;left:0;color:var(--orange)}
+.rules-section p{font-family:'Crimson Pro',serif;font-size:.93rem;color:rgba(255,255,255,.68);line-height:1.7}
+.team-warn{background:rgba(255,26,26,.08);border:1px solid rgba(255,26,26,.3);padding:1rem 1.2rem;margin-bottom:1.5rem;display:flex;align-items:flex-start;gap:.75rem}
+.team-warn-ico{font-size:1.1rem;flex-shrink:0;margin-top:.1rem}
+.team-warn-txt{font-size:.75rem;letter-spacing:.1em;color:rgba(255,255,255,.75);line-height:1.6}
+.team-warn-txt b{color:var(--red)}
 @media(max-width:460px){main{padding:1.2rem 1rem 4rem}header{padding:.65rem 1rem}}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
@@ -190,7 +224,7 @@ main{max-width:660px;margin:0 auto;padding:2rem 1.5rem 5rem}
     <div class="bt">Zadání <em>doručeno</em></div>
     <p class="st">Přečti si instrukce a potvrď přečtení.</p>
     <div class="email-box">
-      <div class="efrom">Od: <em>bomberman@vse.cz</em> &nbsp;·&nbsp; Pro: <em id="eTo">—</em></div>
+      <div class="efrom">Od: <em><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="8be9e4e6e9eef9e6eae5cbfdf8eea5e8f1">[email&#160;protected]</a></em> &nbsp;·&nbsp; Pro: <em id="eTo">—</em></div>
       <div class="esubj" id="eSubj">Instrukce ke hře</div>
       <div class="ebody" id="eBody"><p>Načítám...</p></div>
     </div>
@@ -199,6 +233,73 @@ main{max-width:660px;margin:0 auto;padding:2rem 1.5rem 5rem}
       <label for="chk">Přečetl/a jsem instrukce a jsem připraven/a začít.</label>
     </div>
     <button class="cta" id="confBtn" onclick="doConfirm()" disabled>POTVRDIT A POKRAČOVAT</button>
+  </div></div>
+</div>
+
+<!-- PHASE: rules -->
+<div class="phase" id="ph-rules">
+  <div class="card"><div class="cb">
+    <div class="ey">Před startem hry</div>
+    <div class="bt">Přečti si<br><em>pravidla</em></div>
+    <div class="team-warn">
+      <div class="team-warn-ico">⚠️</div>
+      <div class="team-warn-txt"><b>Zapamatuj si název svého týmu!</b> Budeš ho potřebovat při každém skenování QR kódu na dalších stanovištích. Bez názvu týmu nelze pokračovat ve hře.</div>
+    </div>
+    <div class="rules-wrap">
+      <div class="rules-section">
+        <h2>1. Tým</h2>
+        <ul>
+          <li>Hra probíhá v týmech (doporučeno 3–5 hráčů)</li>
+          <li>Každý tým používá jedno zařízení a jeden název týmu</li>
+          <li>Přihlašujete se pomocí školního e-mailu (@vse.cz)</li>
+          <li>Průběžně si zapisujte všechny získané indicie</li>
+          <li>Po škole se pohybujte jako skupina</li>
+          <li>Zákaz vyhledávání odpovědí</li>
+        </ul>
+      </div>
+      <div class="rules-section">
+        <h2>2. Cíl hry</h2>
+        <p>Zachraňte VŠE před Bombermanem. Za každou správnou odpověď získáte část kódu a nápovědu k další lokaci. Na konci složíte finální řešení a zneškodníte bombu.</p>
+      </div>
+      <div class="rules-section">
+        <h2>3. Průběh hry</h2>
+        <ul>
+          <li>Vyřešíte úkol na stanovišti</li>
+          <li>Získáte indicii a nápovědu k další lokaci</li>
+          <li>Přesunete se na další místo a naskenujete QR kód</li>
+          <li>Takto pokračujete až do finále</li>
+        </ul>
+      </div>
+      <div class="rules-section">
+        <h2>4. Indicie</h2>
+        <p>Všechny indicie si pečlivě zapisujte. Výsledným heslem finální otázky není otázka samotná, ale <b style="color:#fff">správná odpověď na ni</b>.</p>
+      </div>
+      <div class="rules-section">
+        <h2>5. Časový limit</h2>
+        <p>Na splnění celé hry máte <b style="color:var(--orange)">60 minut</b>. Postupujte rychle, ale pečlivě.</p>
+      </div>
+      <div class="rules-section">
+        <h2>6. Pohyb po škole</h2>
+        <ul>
+          <li>Nerušte výuku</li>
+          <li>Neblokujte chodby, vstupy ani jiné prostory</li>
+          <li>Respektujte ostatní studenty i zaměstnance</li>
+          <li>Nepoškozujte prostory ani vybavení školy</li>
+        </ul>
+      </div>
+      <div class="rules-section">
+        <h2>7. Fair play</h2>
+        <ul>
+          <li>Nesdílejte odpovědi s ostatními týmy</li>
+          <li>Nenapovídejte jiným hráčům</li>
+        </ul>
+      </div>
+    </div>
+    <div class="chk-row" style="margin-top:1.2rem">
+      <input type="checkbox" id="rulesChk">
+      <label for="rulesChk">Přečetl/a jsem pravidla a rozumím jim.</label>
+    </div>
+    <button class="cta" id="rulesBtn" onclick="doRulesConfirm()" disabled>POKRAČOVAT ⚡</button>
   </div></div>
 </div>
 
@@ -261,10 +362,62 @@ main{max-width:660px;margin:0 auto;padding:2rem 1.5rem 5rem}
   </div>
 </div>
 
+
+<!-- PHASE: final code (station 6 success) -->
+<div class="phase" id="ph-finalcode">
+  <div class="card"><div class="cb">
+    <div class="ey">Stanoviště 6 splněno!</div>
+    <div class="bt">Váš <em>deaktivační kód</em></div>
+    <p class="st">Zapiš si tento kód — budete ho potřebovat pro deaktivaci bomby na finálním místě.</p>
+    <div class="bomb-container"><div class="bomb-ico" id="bombIco">💣</div></div>
+    <div class="code-display">
+      <div class="code-label">Deaktivační kód vašeho týmu</div>
+      <div class="code-value" id="finalCodeVal">——</div>
+      <div class="code-warn">⚠ Zapiš si kód! Bez něj nelze deaktivovat bombu.</div>
+    </div>
+    <div class="hint-box">
+      <div class="hl">📍 Kam jít dál</div>
+      <div class="ht">Vraťte se na místo, kde to všechno začalo — tam najdete poslední QR kód.</div>
+    </div>
+    <div class="stime" style="margin-top:1rem">Čas stanoviště: <b id="sT6">—</b></div>
+  </div></div>
+</div>
+
+<!-- PHASE: deactivation (station 7 / final QR) -->
+<div class="phase" id="ph-deactivate">
+  <div class="card"><div class="cb">
+    <div class="ey">Finální stanoviště</div>
+    <div class="bt">Deaktivuj <em>bombu</em></div>
+    <div class="bomb-container"><div class="bomb-ico" id="bombIco2">💣</div></div>
+    <div class="deactivate-box">
+      <div class="deact-title">Zadej deaktivační kód</div>
+      <div class="deact-sub">Zadejte 6místný kód, který jste obdrželi na předchozím stanovišti.</div>
+      <div class="code-inp-wrap">
+        <input class="inp" id="deactInp" type="text" placeholder="——" maxlength="6" autocomplete="off" style="flex:1">
+      </div>
+      <div class="errmsg" id="deactErr"></div>
+      <button class="cta" id="deactBtn" onclick="doDeactivate()">💥 DEAKTIVOVAT BOMBU</button>
+    </div>
+    <div class="defuse-result" id="defuseResult"></div>
+  </div></div>
+</div>
+
+<!-- PHASE: end video -->
+<div class="phase" id="ph-endvideo">
+  <div class="card"><div class="cb">
+    <div class="ey">Mise splněna</div>
+    <div class="bt">VŠE je <em>zachráněna!</em></div>
+    <div class="end-video-wrap" id="endVWrap">
+      <div class="v-ph"><div class="v-ph-ico">🎬</div><p>Závěrečné video</p></div>
+    </div>
+    <button class="cta" id="endVideoBtn" onclick="goToLeaderboard()" style="margin-top:1rem">🏆 ZOBRAZIT VÝSLEDKY</button>
+  </div></div>
+</div>
+
 </main>
 
 <!-- Firebase SDK -->
-<script type="module">
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
 import { getDatabase, ref, get, set, update, onValue } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
 
@@ -350,6 +503,22 @@ window.addEventListener('load', async ()=>{
   const sid = parseInt(new URLSearchParams(window.location.search).get('station'))||1;
   const tid = localStorage.getItem(LS_TID);
 
+  // Station 7 = final deactivation station
+  if(sid===7){
+    if(tid){
+      await loadFinalStation(tid);
+      return;
+    }
+    // No session — need team name to recover
+    document.getElementById('eInp').style.display='none';
+    document.querySelector('.note-sm').style.display='none';
+    document.getElementById('eBtn').textContent='POKRAČOVAT VE HŘE';
+    document.querySelector('#ph-email .bt').innerHTML='Pokračovat<br><em>ve hře</em>';
+    document.querySelector('#ph-email .st').textContent='Zadej název svého týmu pro obnovení session.';
+    show('email');
+    return;
+  }
+
   if(tid){
     const team = await getTeam(tid);
     if(team?.startTime){
@@ -391,7 +560,7 @@ async function doEmail(){
   localStorage.setItem(LS_EMAIL, email);
   localStorage.setItem(LS_NAME, team);
 
-  // Stanoviště > 1: hledáme tým v Firebase podle jména
+  // Stanoviště > 1 nebo 7: hledáme tým v Firebase podle jména
   if(sid > 1){
     const teams = await getAllTeams();
     const found = Object.entries(teams).find(([id,t])=>t.name===team && t.startTime);
@@ -399,7 +568,8 @@ async function doEmail(){
       localStorage.setItem(LS_TID, found[0]);
       showHeaders(found[1].name);
       btn.disabled=false;
-      loadStn(sid, found[0]);
+      if(sid===7){ loadFinalStation(found[0]); }
+      else { loadStn(sid, found[0]); }
       return;
     } else {
       err.textContent='Tým nebyl nalezen. Zkontroluj název.';
@@ -434,25 +604,15 @@ function doVerify(){
   if(!verifyCode){err.textContent='Kód vypršel. Vrať se zpět a zkus znovu.';return}
   if(entered !== verifyCode){err.textContent='Špatný kód. Zkontroluj email a zkus znovu.';return}
   err.textContent='';
-  const d = gameData;
-  const email = localStorage.getItem(LS_EMAIL)||'';
-  document.getElementById('eTo').textContent=email;
-  document.getElementById('eSubj').textContent=d.settings.emailSubject||'Instrukce ke hře';
-  document.getElementById('eBody').innerHTML=d.settings.emailBody||'<p>Instrukce budou doplněny.</p>';
-  emailjs.send(EMAILJS_SERVICE, EMAILJS_TEMPLATE, {
-    to_email: email,
-    email_subject: d.settings.emailSubject||'Instrukce ke hře',
-    email_body: d.settings.emailBody||'Vítej v Bomberman VŠE!'
-  });
   verifyCode=null;
-  show('confirm');
+  // Zobraz pravidla (přeskočíme confirm fázi — instrukce jsou v adminu)
+  show('rules');
 }
 window.doVerify = doVerify;
 
-document.getElementById('codeInp').addEventListener('keydown',e=>{if(e.key==='Enter')doVerify()});
-document.getElementById('chk').addEventListener('change',function(){document.getElementById('confBtn').disabled=!this.checked});
+document.getElementById('rulesChk').addEventListener('change',function(){document.getElementById('rulesBtn').disabled=!this.checked});
 
-function doConfirm(){
+function doRulesConfirm(){
   const d = gameData;
   const startBtn = document.getElementById('startBtn');
   const videoUrl = d.settings?.videoUrl||'';
@@ -475,7 +635,8 @@ function doConfirm(){
   }
   show('video');
 }
-window.doConfirm = doConfirm;
+window.doRulesConfirm = doRulesConfirm;
+document.getElementById('chk').addEventListener('change',function(){document.getElementById('confBtn').disabled=!this.checked});
 
 // ── START HRY ──
 async function doStart(){
@@ -698,6 +859,14 @@ async function updProg(tid, sid){
   document.getElementById('pTxt').textContent=eff+' / '+tot;
 }
 
+// ── GENERATE TEAM CODE (deterministic from tid) ──
+function genTeamCode(tid){
+  let h=5381;
+  for(let i=0;i<tid.length;i++)h=((h<<5)+h)+tid.charCodeAt(i)|0;
+  const n=Math.abs(h)%900000+100000;
+  return String(n);
+}
+
 async function showSucc(sid, tid){
   document.getElementById('qCont').style.opacity='.38';
   const p = document.getElementById('succ'); p.style.display='block';
@@ -714,11 +883,19 @@ async function showSucc(sid, tid){
 
   const d = gameData;
   const activeStnIds = d.stations.filter(s=>s.active).map(s=>s.id);
-  const lastId = activeStnIds[activeStnIds.length-1];
-  if(sid===lastId){
-    const finishTime = Date.now();
-    await updateTeam(tid, {finishTime});
-    setTimeout(()=>showLeaderboard(tid),1800);
+  const lastRegularId = activeStnIds[activeStnIds.length-1]; // last non-final station (6)
+
+  if(sid===lastRegularId){
+    // Station 6 done — show deactivation code, don't mark finishTime yet
+    const code = genTeamCode(tid);
+    await updateTeam(tid, {deactivationCode: code});
+    if(sd?.startTime&&sd?.endTime){const s=Math.round((sd.endTime-sd.startTime)/1000);document.getElementById('sT6').textContent=Math.floor(s/60)+':'+String(s%60).padStart(2,'0')}
+    setTimeout(()=>{
+      document.getElementById('finalCodeVal').textContent=code;
+      show('finalcode');
+      glitch();
+    },800);
+    return;
   }
   glitch();
 }
@@ -749,6 +926,89 @@ async function showLeaderboard(myTid){
   }).join('');
   show('lb');
 }
+
+// ── STATION 7: DEACTIVATION ──
+async function loadFinalStation(tid){
+  // Station 7 is the deactivation station — no questions, just code input
+  const team = await getTeam(tid);
+  if(!team){show('email');return;}
+  if(team.finishTime){
+    // Already completed — go straight to leaderboard
+    showLeaderboard(tid);
+    return;
+  }
+  showHeaders(team.name);
+  document.getElementById('hBadge').style.display='block';
+  document.getElementById('hBadge').textContent='FINÁLE';
+  startTimer(team.startTime, gameData?.settings?.gameDuration||60);
+  show('deactivate');
+}
+
+window.doDeactivate = async function(){
+  const tid = localStorage.getItem(LS_TID);
+  const entered = document.getElementById('deactInp').value.trim().toUpperCase();
+  const err = document.getElementById('deactErr');
+  if(!entered || entered.length < 4){err.textContent='Zadej deaktivační kód.';return}
+  if(!tid){err.textContent='Session vypršela. Obnovis stránku.';return}
+
+  const team = await getTeam(tid);
+  const correctCode = team?.deactivationCode || genTeamCode(tid);
+
+  if(entered === correctCode){
+    err.textContent='';
+    document.getElementById('deactBtn').disabled=true;
+    document.getElementById('bombIco2').classList.add('defused');
+    document.getElementById('bombIco2').textContent='💚';
+
+    const result = document.getElementById('defuseResult');
+    result.style.display='block';
+    result.innerHTML='<div class="defuse-ok">💚 BOMBA DEAKTIVOVÁNA!</div>';
+
+    // Mark finish time
+    const finishTime = Date.now();
+    await updateTeam(tid, {finishTime});
+
+    // Load end video and show
+    setTimeout(()=>showEndVideo(tid), 1500);
+  } else {
+    err.textContent='Nesprávný kód. Zkontroluj zápis a zkus znovu.';
+    document.getElementById('deactInp').classList.add('err');
+    setTimeout(()=>document.getElementById('deactInp').classList.remove('err'), 1000);
+    await addPenalty(2, 'Špatný deaktivační kód');
+  }
+};
+
+async function showEndVideo(tid){
+  const d = gameData || await loadGameData();
+  const endVideoUrl = d.settings?.endVideoUrl||'';
+  const vw = document.getElementById('endVWrap');
+  const btn = document.getElementById('endVideoBtn');
+
+  if(endVideoUrl){
+    let url = endVideoUrl;
+    if(url.includes('youtube.com/watch?v='))url=url.replace('watch?v=','embed/');
+    else if(url.includes('youtu.be/'))url='https://www.youtube.com/embed/'+url.split('youtu.be/')[1].split('?')[0];
+    if(url.includes('youtube')||url.includes('vimeo')){
+      vw.innerHTML=`<iframe src="${url}" allowfullscreen allow="autoplay"></iframe>`;
+    } else {
+      const vid=document.createElement('video');
+      vid.src=url;vid.controls=true;vid.autoplay=true;vid.playsInline=true;
+      vid.style='position:absolute;inset:0;width:100%;height:100%';
+      vw.innerHTML='';vw.appendChild(vid);
+    }
+    btn.textContent='🏆 ZOBRAZIT VÝSLEDKY';
+  } else {
+    btn.textContent='🏆 ZOBRAZIT VÝSLEDKY';
+  }
+  show('endvideo');
+  glitch();
+}
+
+window.goToLeaderboard = function(){
+  const tid = localStorage.getItem(LS_TID);
+  showLeaderboard(tid);
+}
+
 
 function glitch(){const ov=document.getElementById('glov');let n=0;const iv=setInterval(()=>{ov.style.opacity=n%2?'0':'1';ov.style.background=['rgba(0,229,200,.04)','rgba(255,106,0,.04)','rgba(255,26,26,.03)'][n%3];ov.style.clipPath=`inset(${Math.random()*80}% 0 ${Math.random()*10}% 0)`;if(++n>10){clearInterval(iv);ov.style.opacity='0';}},75)}
 
