@@ -521,7 +521,7 @@ async function renderStations(){
       <div class="scb">
         <div class="scti">${s.title}</div>
         <div class="scd">${s.desc||'—'}</div>
-        <div class="scq">${s.battery?.length||0} otázek v baterii · ${s.hint?'Nápověda ✓':'Nápověda —'}</div>
+        <div class="scq">${s.battery?.length||0} otázek v baterii · ${s.hint?'Nápověda ✓':'Nápověda —'}${s.generateCode?' · <span style="color:var(--teal)">🔑 Generuje kód</span>':''}${s.isFinal?' · <span style="color:var(--orange)">💥 Finální</span>':''}</div>
       </div>
       <div class="sca">
         <button class="btn bg" style="font-size:.58rem;padding:.38rem .75rem" onclick="openEdit(${s.id})">✏ Upravit</button>
@@ -553,6 +553,8 @@ window.openNew = async function(){
   document.getElementById('mTitle').value='';document.getElementById('mDesc').value='';
   document.getElementById('mHint').value='';document.getElementById('mHintImg').value='';document.getElementById('mMapImg').value='';
   document.getElementById('mActive').value='true';
+  document.getElementById('mGenerateCode').checked=false;
+  document.getElementById('mIsFinal').checked=false;
   editQs=[{id:nid+'_1',text:'',choices:['','','',''],correct:0}];
   renderBatt();document.getElementById('modal').classList.add('open');
 }
@@ -564,6 +566,8 @@ window.openEdit = async function(id){
   document.getElementById('mTitle').value=s.title;document.getElementById('mDesc').value=s.desc||'';
   document.getElementById('mHint').value=s.hint||'';document.getElementById('mHintImg').value=s.hintImage||'';document.getElementById('mMapImg').value=s.mapImage||'';
   document.getElementById('mActive').value=s.active?'true':'false';
+  document.getElementById('mGenerateCode').checked=s.generateCode||false;
+  document.getElementById('mIsFinal').checked=s.isFinal||false;
   editQs=JSON.parse(JSON.stringify(s.battery||[]));
   renderBatt();document.getElementById('modal').classList.add('open');
 }
@@ -600,7 +604,10 @@ window.saveStn = async function(){
     desc:document.getElementById('mDesc').value,hint:document.getElementById('mHint').value,
     hintImage:document.getElementById('mHintImg').value,
     mapImage:document.getElementById('mMapImg').value,
-    active:document.getElementById('mActive').value==='true',battery:editQs};
+    active:document.getElementById('mActive').value==='true',
+    generateCode:document.getElementById('mGenerateCode').checked,
+    isFinal:document.getElementById('mIsFinal').checked,
+    battery:editQs};
   const idx = d.stations.findIndex(s=>s.id===id);
   if(idx>=0)d.stations[idx]=s;else d.stations.push(s);
   d.stations.sort((a,b)=>a.id-b.id);

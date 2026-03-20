@@ -503,8 +503,9 @@ window.addEventListener('load', async ()=>{
   const sid = parseInt(new URLSearchParams(window.location.search).get('station'))||1;
   const tid = localStorage.getItem(LS_TID);
 
-  // Station 7 = final deactivation station
-  if(sid===7){
+  // Zkontroluj jestli je toto finální stanoviště (flag isFinal)
+  const stnCheck = d.stations.find(s=>s.id===sid);
+  if(stnCheck?.isFinal){
     if(tid){
       await loadFinalStation(tid);
       return;
@@ -568,7 +569,8 @@ async function doEmail(){
       localStorage.setItem(LS_TID, found[0]);
       showHeaders(found[1].name);
       btn.disabled=false;
-      if(sid===7){ loadFinalStation(found[0]); }
+      const stnCheck2 = gameData?.stations?.find(s=>s.id===sid);
+      if(stnCheck2?.isFinal){ loadFinalStation(found[0]); }
       else { loadStn(sid, found[0]); }
       return;
     } else {
@@ -882,11 +884,10 @@ async function showSucc(sid, tid){
   if(sd?.startTime&&sd?.endTime){const s=Math.round((sd.endTime-sd.startTime)/1000);document.getElementById('sT').textContent=Math.floor(s/60)+':'+String(s%60).padStart(2,'0')}
 
   const d = gameData;
-  const activeStnIds = d.stations.filter(s=>s.active).map(s=>s.id);
-  const lastRegularId = activeStnIds[activeStnIds.length-1]; // last non-final station (6)
+  const stn = d.stations.find(s=>s.id===sid);
 
-  if(sid===lastRegularId){
-    // Station 6 done — show deactivation code, don't mark finishTime yet
+  if(stn?.generateCode){
+    // Stanoviště má flag generateCode — vygeneruj deaktivační kód
     const code = genTeamCode(tid);
     await updateTeam(tid, {deactivationCode: code});
     if(sd?.startTime&&sd?.endTime){const s=Math.round((sd.endTime-sd.startTime)/1000);document.getElementById('sT6').textContent=Math.floor(s/60)+':'+String(s%60).padStart(2,'0')}
