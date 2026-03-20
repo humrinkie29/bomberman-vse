@@ -359,6 +359,16 @@ tr:hover td{background:rgba(255,255,255,.015)}
       <div class="fi"><label>Nápověda — kde najít další QR kód</label><textarea id="mHint" rows="2" placeholder="Další QR najdeš na..."></textarea></div>
       <div class="fi"><label>Obrázek nápovědy (URL, volitelné)</label><input type="url" id="mHintImg" placeholder="https://..."></div>
       <div class="fi"><label>Mapa areálu (URL obrázku, volitelné)</label><input type="url" id="mMapImg" placeholder="https://..."></div>
+      <div style="display:flex;gap:1.5rem;margin:0.5rem 0 0.8rem;padding:.8rem;background:rgba(0,229,200,.04);border:1px solid rgba(0,229,200,.12)">
+        <label style="display:flex;align-items:center;gap:.55rem;cursor:pointer;font-size:.68rem;letter-spacing:.12em;color:rgba(255,255,255,.65)">
+          <input type="checkbox" id="mGenerateCode" style="accent-color:var(--teal);width:14px;height:14px">
+          🔑 Po splnění vygenerovat deaktivační kód
+        </label>
+        <label style="display:flex;align-items:center;gap:.55rem;cursor:pointer;font-size:.68rem;letter-spacing:.12em;color:rgba(255,255,255,.65)">
+          <input type="checkbox" id="mIsFinal" style="accent-color:var(--orange);width:14px;height:14px">
+          💥 Finální stanoviště (zadání kódu)
+        </label>
+      </div>
       <div class="batt-section">
         <div class="batt-hdr">
           <span>Baterie otázek</span>
