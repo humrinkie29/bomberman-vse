@@ -554,7 +554,8 @@ window.delStn = async function(id){
 }
 
 // ── MODAL / BATTERY EDITOR ──
-let editQs=[];
+window.editQs = [];
+let editQs = window.editQs;
 window.openNew = async function(){
   const d = await fbGet('gameData');
   const nid = Math.max(0,...d.stations.map(s=>s.id))+1;
@@ -565,7 +566,7 @@ window.openNew = async function(){
   document.getElementById('mActive').value='true';
   document.getElementById('mGenerateCode').checked=false;
   document.getElementById('mIsFinal').checked=false;
-  editQs=[{id:nid+'_1',text:'',choices:['','','',''],correct:0}];
+  editQs=[{id:nid+'_1',text:'',choices:['','','',''],correct:0}];window.editQs=editQs;
   renderBatt();document.getElementById('modal').classList.add('open');
 }
 window.openEdit = async function(id){
@@ -578,7 +579,7 @@ window.openEdit = async function(id){
   document.getElementById('mActive').value=s.active?'true':'false';
   document.getElementById('mGenerateCode').checked=s.generateCode||false;
   document.getElementById('mIsFinal').checked=s.isFinal||false;
-  editQs=JSON.parse(JSON.stringify(s.battery||[]));
+  editQs=JSON.parse(JSON.stringify(s.battery||[]));window.editQs=editQs;
   renderBatt();document.getElementById('modal').classList.add('open');
 }
 window.closeModal = function(){document.getElementById('modal').classList.remove('open')}
@@ -589,23 +590,23 @@ function renderBatt(){
     <div class="qed" id="qed_${i}">
       <div class="qed-hdr"><span class="qed-n">Otázka ${i+1}</span><button class="qrm" onclick="rmQ(${i})">✕ Odebrat</button></div>
       <div class="fi" style="margin-bottom:.6rem"><label>Text otázky</label>
-        <input type="text" value="${q.text.replace(/"/g,'&quot;')}" oninput="editQs[${i}].text=this.value" placeholder="Otázka...">
+        <input type="text" value="${q.text.replace(/"/g,'&quot;')}" oninput="window.editQs[${i}].text=this.value" placeholder="Otázka...">
       </div>
       <div class="choices-ed">
         <div style="font-size:.52rem;letter-spacing:.24em;color:var(--muted);text-transform:uppercase;margin-bottom:.42rem">Možnosti (označ správnou)</div>
         ${q.choices.map((c,ci)=>`
           <div class="cr">
             <span style="font-size:.6rem;color:rgba(255,255,255,.3);min-width:1rem">${['A','B','C','D','E'][ci]}</span>
-            <input type="text" value="${c.replace(/"/g,'&quot;')}" oninput="editQs[${i}].choices[${ci}]=this.value" placeholder="Možnost ${ci+1}...">
-            <label class="cr-radio"><input type="radio" name="cr_${i}" value="${ci}" ${q.correct===ci?'checked':''} onchange="editQs[${i}].correct=${ci}"> ✓</label>
+            <input type="text" value="${c.replace(/"/g,'&quot;')}" oninput="window.editQs[${i}].choices[${ci}]=this.value" placeholder="Možnost ${ci+1}...">
+            <label class="cr-radio"><input type="radio" name="cr_${i}" value="${ci}" ${q.correct===ci?'checked':''} onchange="window.editQs[${i}].correct=${ci}"> ✓</label>
           </div>`).join('')}
         <button class="add-ch" onclick="addCh(${i})">+ Přidat možnost</button>
       </div>
     </div>`).join('');
 }
-window.addQ = function(){const sid=document.getElementById('mId').value;editQs.push({id:sid+'_q'+Date.now().toString(36),text:'',choices:['','','',''],correct:0});renderBatt()}
-window.rmQ = function(i){editQs.splice(i,1);renderBatt()}
-window.addCh = function(i){editQs[i].choices.push('');renderBatt()}
+window.addQ = function(){const sid=document.getElementById('mId').value;editQs.push({id:sid+'_q'+Date.now().toString(36),text:'',choices:['','','',''],correct:0});window.editQs=editQs;renderBatt()}
+window.rmQ = function(i){editQs.splice(i,1);window.editQs=editQs;renderBatt()}
+window.addCh = function(i){editQs[i].choices.push('');window.editQs=editQs;renderBatt()}
 
 window.saveStn = async function(){
   const d = await fbGet('gameData');
@@ -617,7 +618,7 @@ window.saveStn = async function(){
     active:document.getElementById('mActive').value==='true',
     generateCode:document.getElementById('mGenerateCode').checked,
     isFinal:document.getElementById('mIsFinal').checked,
-    battery:editQs};
+    battery:window.editQs};
   const idx = d.stations.findIndex(s=>s.id===id);
   if(idx>=0)d.stations[idx]=s;else d.stations.push(s);
   d.stations.sort((a,b)=>a.id-b.id);
