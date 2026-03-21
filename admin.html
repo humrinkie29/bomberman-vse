@@ -588,21 +588,37 @@ function renderBatt(){
   const c=document.getElementById('battEditor');
   c.innerHTML=editQs.map((q,i)=>`
     <div class="qed" id="qed_${i}">
-      <div class="qed-hdr"><span class="qed-n">Otázka ${i+1}</span><button class="qrm" onclick="rmQ(${i})">✕ Odebrat</button></div>
+      <div class="qed-hdr"><span class="qed-n">Otázka ${i+1}</span><button class="qrm" data-qi="${i}">✕ Odebrat</button></div>
       <div class="fi" style="margin-bottom:.6rem"><label>Text otázky</label>
-        <input type="text" value="${q.text.replace(/"/g,'&quot;')}" oninput="window.editQs[${i}].text=this.value" placeholder="Otázka...">
+        <input type="text" class="q-text" data-qi="${i}" value="${q.text.replace(/"/g,'&quot;')}" placeholder="Otázka...">
       </div>
       <div class="choices-ed">
         <div style="font-size:.52rem;letter-spacing:.24em;color:var(--muted);text-transform:uppercase;margin-bottom:.42rem">Možnosti (označ správnou)</div>
-        ${q.choices.map((c,ci)=>`
+        ${q.choices.map((ch,ci)=>`
           <div class="cr">
             <span style="font-size:.6rem;color:rgba(255,255,255,.3);min-width:1rem">${['A','B','C','D','E'][ci]}</span>
-            <input type="text" value="${c.replace(/"/g,'&quot;')}" oninput="window.editQs[${i}].choices[${ci}]=this.value" placeholder="Možnost ${ci+1}...">
-            <label class="cr-radio"><input type="radio" name="cr_${i}" value="${ci}" ${q.correct===ci?'checked':''} onchange="window.editQs[${i}].correct=${ci}"> ✓</label>
+            <input type="text" class="q-choice" data-qi="${i}" data-ci="${ci}" value="${ch.replace(/"/g,'&quot;')}" placeholder="Možnost ${ci+1}...">
+            <label class="cr-radio"><input type="radio" class="q-correct" name="cr_${i}" data-qi="${i}" data-ci="${ci}" value="${ci}" ${q.correct===ci?'checked':''}> ✓</label>
           </div>`).join('')}
-        <button class="add-ch" onclick="addCh(${i})">+ Přidat možnost</button>
+        <button class="add-ch" data-qi="${i}">+ Přidat možnost</button>
       </div>
     </div>`).join('');
+  // Attach event listeners after rendering
+  c.querySelectorAll('.q-text').forEach(el=>{
+    el.addEventListener('input',function(){editQs[+this.dataset.qi].text=this.value;});
+  });
+  c.querySelectorAll('.q-choice').forEach(el=>{
+    el.addEventListener('input',function(){editQs[+this.dataset.qi].choices[+this.dataset.ci]=this.value;});
+  });
+  c.querySelectorAll('.q-correct').forEach(el=>{
+    el.addEventListener('change',function(){editQs[+this.dataset.qi].correct=+this.dataset.ci;});
+  });
+  c.querySelectorAll('.qrm').forEach(el=>{
+    el.addEventListener('click',function(){editQs.splice(+this.dataset.qi,1);window.editQs=editQs;renderBatt();});
+  });
+  c.querySelectorAll('.add-ch').forEach(el=>{
+    el.addEventListener('click',function(){editQs[+this.dataset.qi].choices.push('');window.editQs=editQs;renderBatt();});
+  });
 }
 window.addQ = function(){const sid=document.getElementById('mId').value;editQs.push({id:sid+'_q'+Date.now().toString(36),text:'',choices:['','','',''],correct:0});window.editQs=editQs;renderBatt()}
 window.rmQ = function(i){editQs.splice(i,1);window.editQs=editQs;renderBatt()}
