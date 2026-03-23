@@ -685,7 +685,7 @@ async function loadStn(sid, tid){
   let stations = team.stations||{};
 
   if(!stations[sid]){
-    const shuffled = [...stn.battery].sort(()=>seeded(tid+sid)-.5);
+    const shuffled = [...stn.battery].sort(()=>Math.random()-.5);
     const picked = shuffled.slice(0,Math.min(N,shuffled.length));
     stations[sid] = {assigned:picked.map(q=>q.id),solved:[],attempts:{},startTime:Date.now(),endTime:null};
     await updateTeam(tid, {stations});
@@ -712,24 +712,29 @@ async function loadStn(sid, tid){
 function seeded(s){let h=0;for(let i=0;i<s.length;i++)h=Math.imul(31,h)+s.charCodeAt(i)|0;h=Math.imul(h^(h>>>16),0x45d9f3b)|0;return((h^(h>>>16))>>>0)/4294967296}
 
 // ── TIMER ──
+let cachedPenalties = 0;
 function startTimer(ts, dur){
   const total = dur*60000;
   const el = document.getElementById('tVal');
   const wrap = document.getElementById('hTimer');
   wrap.style.display='flex';
   if(timerIv)clearInterval(timerIv);
-  async function tick(){
+  // Sync penalties from Firebase every 10s, display locally every 1s
+  async function syncPenalties(){
     const tid = localStorage.getItem(LS_TID);
-    const team = tid ? await getTeam(tid) : null;
-    const pen = (team?.penalties||0)*60000;
-    const rem = Math.max(0, total-(Date.now()-ts)-pen);
+    if(tid){const team = await getTeam(tid);cachedPenalties=(team?.penalties||0)*60000;}
+  }
+  syncPenalties();
+  setInterval(syncPenalties, 10000);
+  function tick(){
+    const rem = Math.max(0, total-(Date.now()-ts)-cachedPenalties);
     const m = Math.floor(rem/60000), s = Math.floor((rem%60000)/1000);
     el.textContent = String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
     if(rem<300000)wrap.classList.add('warn');else wrap.classList.remove('warn');
     if(rem===0){clearInterval(timerIv);show('over')}
   }
   tick();
-  timerIv = setInterval(tick, 5000); // každých 5s — šetří Firebase reads
+  timerIv = setInterval(tick, 1000);
 }
 
 async function addPenalty(mins, label){
