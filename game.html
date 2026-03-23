@@ -911,7 +911,7 @@ async function showSucc(sid, tid){
   // Generovat kód: flag generateCode NEBO předposlední ze všech aktivních stanovišť
   const activeStnIds = d.stations.filter(s=>s.active).map(s=>s.id).sort((a,b)=>a-b);
   const secondLastId = activeStnIds[activeStnIds.length-2]; // předposlední
-  const shouldGenerateCode = stn?.generateCode || sid===secondLastId;
+  const shouldGenerateCode = stn?.generateCode===true || Number(sid)===Number(secondLastId);
 
   if(shouldGenerateCode){
     const code = genTeamCode(tid);
