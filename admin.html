@@ -160,6 +160,8 @@ tr:hover td{background:rgba(255,255,255,.015)}
       <div class="ni" onclick="nav('email',this)"><span>📧</span> Úvodní email</div>
       <div class="ni" onclick="nav('video',this)"><span>🎬</span> Úvodní video</div>
       <div class="ni" onclick="nav('endvideo',this)"><span>🎥</span> Závěrečné video</div>
+      <div class="ni" onclick="nav('explosionvideo',this)"><span>💥</span> Video výbuchu</div>
+      <div class="ni" onclick="nav('feedback',this)"><span>📝</span> Feedback URL</div>
       <div class="ni" onclick="nav('style',this)"><span>🎨</span> Styl otázek</div>
       <div class="ns">Systém</div>
       <div class="ni" onclick="nav('settings',this)"><span>⚙️</span> Nastavení</div>
@@ -287,6 +289,33 @@ tr:hover td{background:rgba(255,255,255,.015)}
           Finální QR kód (stanoviště 7) vygeneruj v sekci <strong style="color:rgba(255,255,255,.55)">🔲 QR kódy</strong> — URL bude <code style="color:var(--teal)">game.html?station=7</code>. Vytiskni ho a umísti na místo kde hra začala (vestibul NB).
         </p>
       </div>
+    </div>
+
+    <!-- EXPLOSION VIDEO -->
+    <div class="sec" id="sec-explosionvideo">
+      <div class="tb"><div class="tbtit">Video výbuchu</div>
+        <div class="tbacts"><button class="btn bp" onclick="saveExplosionVideo()">Uložit</button></div>
+      </div>
+      <p style="font-size:.65rem;color:rgba(255,255,255,.3);letter-spacing:.12em;margin-bottom:1.2rem;line-height:1.6">
+        Toto video se přehraje při vypršení času nebo zadání špatného kódu na finálním stanovišti. Podporuje YouTube, Vimeo nebo MP4.
+      </p>
+      <div class="fi"><label>URL videa výbuchu (YouTube / Vimeo / MP4)</label><input type="url" id="explVidUrl" placeholder="https://www.youtube.com/watch?v=..."></div>
+      <div style="margin-top:.5rem">
+        <div id="explVidPrev" style="width:100%;aspect-ratio:16/9;background:#000;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.2);font-size:.65rem;letter-spacing:.2em">NÁHLED VIDEA</div>
+      </div>
+      <button class="btn bo" style="margin-top:.8rem" onclick="prevExplosionVideo()">Načíst náhled</button>
+    </div>
+
+    <!-- FEEDBACK URL -->
+    <div class="sec" id="sec-feedback">
+      <div class="tb"><div class="tbtit">Feedback formulář</div>
+        <div class="tbacts"><button class="btn bp" onclick="saveFeedbackUrl()">Uložit</button></div>
+      </div>
+      <p style="font-size:.65rem;color:rgba(255,255,255,.3);letter-spacing:.12em;margin-bottom:1.2rem;line-height:1.6">
+        Po zobrazení výsledků se hráčům zobrazí tlačítko pro vyplnění feedbacku. Vlož URL Google Forms, Typeform nebo jiného formuláře.
+      </p>
+      <div class="fi"><label>URL feedback formuláře</label><input type="url" id="feedbackUrlInp" placeholder="https://forms.google.com/..."></div>
+      <p style="font-size:.6rem;color:rgba(255,255,255,.2);letter-spacing:.1em;margin-top:.5rem">Tlačítko se zobrazí automaticky na stránce výsledků po skončení hry.</p>
     </div>
 
     <!-- QUESTION STYLE -->
@@ -436,6 +465,8 @@ async function initApp(){
   loadEmailEditor();
   loadVideoEditor();
   loadEndVideoEditor();
+  loadExplosionVideoEditor();
+  loadFeedbackEditor();
   loadStyleEditor();
   loadSettingsEditor();
 }
@@ -851,6 +882,51 @@ window.saveSettings = async function(){
   d.settings.penaltyMinutes=parseInt(document.getElementById('penMin').value)??2;
   d.settings.hintPenaltyMinutes=parseInt(document.getElementById('hintPenMin').value)??1;
   await fbSet('gameData',d);toast('Nastavení uloženo do Firebase!');
+}
+
+// ── EXPLOSION VIDEO ──
+window.prevExplosionVideo = function(){
+  const url=document.getElementById('explVidUrl').value.trim();
+  const c=document.getElementById('explVidPrev');
+  if(!url){c.textContent='NÁHLED VIDEA';c.style.position='';return}
+  let src=url;
+  if(url.includes('youtube.com/watch?v='))src=url.replace('watch?v=','embed/');
+  else if(url.includes('youtu.be/'))src='https://www.youtube.com/embed/'+url.split('youtu.be/')[1];
+  if(src.includes('youtube')||src.includes('vimeo'))c.innerHTML=`<iframe src="${src}" style="position:absolute;inset:0;width:100%;height:100%;border:none" allowfullscreen></iframe>`;
+  else c.innerHTML=`<video src="${src}" controls style="position:absolute;inset:0;width:100%;height:100%"></video>`;
+  c.style.position='relative';
+}
+window.saveExplosionVideo = async function(){
+  const d = await fbGet('gameData');
+  d.settings.explosionVideoUrl=document.getElementById('explVidUrl').value;
+  await fbSet('gameData',d);toast('Video výbuchu uloženo do Firebase!');
+}
+async function loadExplosionVideoEditor(){
+  const d = await fbGet('gameData');
+  document.getElementById('explVidUrl').value=d?.settings?.explosionVideoUrl||'';
+}
+
+// ── SUCCESS VIDEO (rename endVideoUrl to successVideoUrl) ──
+window.saveEndVideo = async function(){
+  const d = await fbGet('gameData');
+  d.settings.successVideoUrl=document.getElementById('endVidUrl').value;
+  d.settings.endVideoUrl=document.getElementById('endVidUrl').value; // backwards compat
+  await fbSet('gameData',d);toast('Závěrečné video uloženo do Firebase!');
+}
+async function loadEndVideoEditor(){
+  const d = await fbGet('gameData');
+  document.getElementById('endVidUrl').value=d?.settings?.successVideoUrl||d?.settings?.endVideoUrl||'';
+}
+
+// ── FEEDBACK URL ──
+window.saveFeedbackUrl = async function(){
+  const d = await fbGet('gameData');
+  d.settings.feedbackUrl=document.getElementById('feedbackUrlInp').value;
+  await fbSet('gameData',d);toast('Feedback URL uloženo!');
+}
+async function loadFeedbackEditor(){
+  const d = await fbGet('gameData');
+  document.getElementById('feedbackUrlInp').value=d?.settings?.feedbackUrl||'';
 }
 
 // ── TOAST ──

@@ -344,7 +344,7 @@ main{max-width:660px;margin:0 auto;padding:2rem 1.5rem 5rem}
   </div>
 </div>
 
-<!-- PHASE: game over -->
+<!-- PHASE: game over - now handled by showExplosionVideo -->
 <div class="phase" id="ph-over">
   <div class="go">ČAS VYPRŠEL</div>
   <div class="gosub">Bomberman vyhrál. Tentokrát.</div>
@@ -402,8 +402,9 @@ main{max-width:660px;margin:0 auto;padding:2rem 1.5rem 5rem}
 <!-- PHASE: end video -->
 <div class="phase" id="ph-endvideo">
   <div class="card"><div class="cb">
-    <div class="ey">Mise splněna</div>
-    <div class="bt">VŠE je <em>zachráněna!</em></div>
+    <div class="ey">Konec hry</div>
+    <div class="bt" id="endVideoTitle">VŠE je <em>zachráněna!</em></div>
+    <p class="st" id="endVideoSub">Bomba byla úspěšně deaktivována.</p>
     <div class="end-video-wrap" id="endVWrap">
       <div class="v-ph"><div class="v-ph-ico">🎬</div><p>Závěrečné video</p></div>
     </div>
@@ -549,7 +550,8 @@ async function doEmail(){
   const email = emailEl.style.display==='none' ? '' : emailEl.value.trim().toLowerCase();
   const team = document.getElementById('tInp').value.trim();
   const err = document.getElementById('eErr');
-  if(sid===1 && !email.endsWith('@vse.cz')){err.textContent='Email musí končit @vse.cz';return}
+  // Email validation temporarily disabled for testing
+  // if(sid===1 && !email.endsWith('@vse.cz')){err.textContent='Email musí končit @vse.cz';return}
   if(!team){err.textContent='Zadej název týmu';return}
   err.textContent='';
   const btn = document.getElementById('eBtn');
@@ -731,7 +733,7 @@ function startTimer(ts, dur){
     const m = Math.floor(rem/60000), s = Math.floor((rem%60000)/1000);
     el.textContent = String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
     if(rem<300000)wrap.classList.add('warn');else wrap.classList.remove('warn');
-    if(rem===0){clearInterval(timerIv);show('over')}
+    if(rem===0){clearInterval(timerIv);showExplosionVideo();}
   }
   tick();
   timerIv = setInterval(tick, 1000);
@@ -998,21 +1000,32 @@ window.doDeactivate = async function(){
     // Load end video and show
     setTimeout(()=>showEndVideo(tid), 1500);
   } else {
-    err.textContent='Nesprávný kód. Zkontroluj zápis a zkus znovu.';
-    document.getElementById('deactInp').classList.add('err');
-    setTimeout(()=>document.getElementById('deactInp').classList.remove('err'), 1000);
-    await addPenalty(2, 'Špatný deaktivační kód');
+    const attempts = (window._deactAttempts||0) + 1;
+    window._deactAttempts = attempts;
+    if(attempts >= 3){
+      // 3 wrong attempts - bomb explodes
+      err.textContent='';
+      document.getElementById('deactBtn').disabled=true;
+      showExplosionVideo();
+    } else {
+      err.textContent=`Nesprávný kód! Zbývají ${3-attempts} pokusy.`;
+      document.getElementById('deactInp').classList.add('err');
+      setTimeout(()=>document.getElementById('deactInp').classList.remove('err'), 1000);
+      await addPenalty(2, 'Špatný deaktivační kód');
+    }
   }
 };
 
 async function showEndVideo(tid){
   const d = gameData || await loadGameData();
-  const endVideoUrl = d.settings?.endVideoUrl||'';
+  const successUrl = d.settings?.successVideoUrl||d.settings?.endVideoUrl||'';
   const vw = document.getElementById('endVWrap');
   const btn = document.getElementById('endVideoBtn');
+  document.getElementById('endVideoTitle').textContent='VŠE je zachráněna! 🎉';
+  document.getElementById('endVideoSub').textContent='Bomba byla úspěšně deaktivována.';
 
-  if(endVideoUrl){
-    let url = endVideoUrl;
+  if(successUrl){
+    let url = successUrl;
     if(url.includes('youtube.com/watch?v='))url=url.replace('watch?v=','embed/');
     else if(url.includes('youtu.be/'))url='https://www.youtube.com/embed/'+url.split('youtu.be/')[1].split('?')[0];
     if(url.includes('youtube')||url.includes('vimeo')){
@@ -1023,17 +1036,50 @@ async function showEndVideo(tid){
       vid.style='position:absolute;inset:0;width:100%;height:100%';
       vw.innerHTML='';vw.appendChild(vid);
     }
-    btn.textContent='🏆 ZOBRAZIT VÝSLEDKY';
-  } else {
-    btn.textContent='🏆 ZOBRAZIT VÝSLEDKY';
   }
   show('endvideo');
   glitch();
 }
 
-window.goToLeaderboard = function(){
+async function showExplosionVideo(){
+  const d = gameData || await loadGameData();
+  const explUrl = d.settings?.explosionVideoUrl||'';
+  const vw = document.getElementById('endVWrap');
+  document.getElementById('endVideoTitle').textContent='BOMBA VYBUCHLA! 💥';
+  document.getElementById('endVideoSub').textContent='Čas vypršel nebo byl zadán špatný kód. Bomberman vyhrál... tentokrát.';
+  document.getElementById('endVideoBtn').textContent='📊 ZOBRAZIT VÝSLEDKY';
+
+  if(explUrl){
+    let url = explUrl;
+    if(url.includes('youtube.com/watch?v='))url=url.replace('watch?v=','embed/');
+    else if(url.includes('youtu.be/'))url='https://www.youtube.com/embed/'+url.split('youtu.be/')[1].split('?')[0];
+    if(url.includes('youtube')||url.includes('vimeo')){
+      vw.innerHTML=`<iframe src="${url}" allowfullscreen allow="autoplay"></iframe>`;
+    } else {
+      const vid=document.createElement('video');
+      vid.src=url;vid.controls=true;vid.autoplay=true;vid.playsInline=true;
+      vid.style='position:absolute;inset:0;width:100%;height:100%';
+      vw.innerHTML='';vw.appendChild(vid);
+    }
+  }
+  show('endvideo');
+}
+
+window.goToLeaderboard = async function(){
   const tid = localStorage.getItem(LS_TID);
-  showLeaderboard(tid);
+  await showLeaderboard(tid);
+  // Show feedback link after leaderboard
+  const d = gameData || await loadGameData();
+  const feedbackUrl = d.settings?.feedbackUrl||'';
+  if(feedbackUrl){
+    const lb = document.getElementById('lbList');
+    if(lb && !document.getElementById('feedbackBtn')){
+      const fbDiv = document.createElement('div');
+      fbDiv.style.cssText='text-align:center;margin-top:1.5rem';
+      fbDiv.innerHTML=`<a id="feedbackBtn" href="${feedbackUrl}" target="_blank" style="display:inline-block;font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:.2em;background:rgba(0,229,200,.13);border:1px solid rgba(0,229,200,.38);color:var(--teal);padding:.8rem 2rem;text-decoration:none;margin-top:.5rem">📝 VYPLNIT FEEDBACK</a>`;
+      lb.parentElement.appendChild(fbDiv);
+    }
+  }
 }
 
 
