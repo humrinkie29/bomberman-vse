@@ -621,7 +621,7 @@ function doRulesConfirm(){
     const vw = document.getElementById('vWrap');
     let url = videoUrl;
     if(url.includes('youtube.com/watch?v='))url=url.replace('watch?v=','embed/');
-    else if(url.includes('youtu.be/'))url='https://www.youtube.com/embed/'+url.split('youtu.be/')[1].split('?')[0];
+    else if(url.includes('youtu.be/'))url='https://www.youtube.com/embed/'+url.split('youtu.be/')[1].split('?')[0].split('&')[0];
     if(url.includes('youtube')||url.includes('vimeo')){
       vw.innerHTML=`<iframe src="${url}" allowfullscreen allow="autoplay"></iframe>`;
       setTimeout(()=>{startBtn.disabled=false;startBtn.textContent='⚡ SPUSTIT HRU';},5000);
@@ -1027,7 +1027,7 @@ async function showEndVideo(tid){
   if(successUrl){
     let url = successUrl;
     if(url.includes('youtube.com/watch?v='))url=url.replace('watch?v=','embed/');
-    else if(url.includes('youtu.be/'))url='https://www.youtube.com/embed/'+url.split('youtu.be/')[1].split('?')[0];
+    else if(url.includes('youtu.be/'))url='https://www.youtube.com/embed/'+url.split('youtu.be/')[1].split('?')[0].split('&')[0];
     if(url.includes('youtube')||url.includes('vimeo')){
       vw.innerHTML=`<iframe src="${url}" allowfullscreen allow="autoplay"></iframe>`;
     } else {
@@ -1052,7 +1052,7 @@ async function showExplosionVideo(){
   if(explUrl){
     let url = explUrl;
     if(url.includes('youtube.com/watch?v='))url=url.replace('watch?v=','embed/');
-    else if(url.includes('youtu.be/'))url='https://www.youtube.com/embed/'+url.split('youtu.be/')[1].split('?')[0];
+    else if(url.includes('youtu.be/'))url='https://www.youtube.com/embed/'+url.split('youtu.be/')[1].split('?')[0].split('&')[0];
     if(url.includes('youtube')||url.includes('vimeo')){
       vw.innerHTML=`<iframe src="${url}" allowfullscreen allow="autoplay"></iframe>`;
     } else {
