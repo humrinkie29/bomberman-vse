@@ -447,6 +447,7 @@ async function fbUpdate(path,val){ await update(ref(db,path),val); }
 async function fbDel(path){ await remove(ref(db,path)); }
 
 // ── AUTH ──
+function doLogin(){return window.doLogin();}
 window.doLogin = function(){
   if(document.getElementById('lp').value===getPass()){
     document.getElementById('login').style.display='none';
@@ -805,10 +806,7 @@ async function loadVideoEditor(){
   const d = await fbGet('gameData');
   document.getElementById('vidUrl').value=d?.settings?.videoUrl||'';
 }
-async function loadEndVideoEditor(){
-  const d = await fbGet('gameData');
-  document.getElementById('endVidUrl').value=d?.settings?.endVideoUrl||'';
-}
+
 window.prevVideo = function(){
   const url=document.getElementById('vidUrl').value.trim();
   const c=document.getElementById('vidPrev');
