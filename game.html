@@ -745,7 +745,7 @@ async function addPenalty(mins, label){
   const newPen = (team?.penalties||0)+mins;
   await updateTeam(tid, {penalties: newPen});
   const msg = document.getElementById('penMsg');
-  msg.textContent=`⚠ PENALIZACE +${mins} MIN — ${label}`;
+  msg.textContent=`⚠ -${mins} MIN — ${label}`;
   msg.classList.add('on');
   document.getElementById('penFlash').classList.add('on');
   setTimeout(()=>{msg.classList.remove('on');document.getElementById('penFlash').classList.remove('on');},1800);
